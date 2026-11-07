@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>QALQAN — Cybersecurity Simulator</title><meta name="theme-color" content="#000000">
+<style>
+:root{--bg:#000;--b2:#0a0a0a;--cd:#111;--bd:#292929;--tx:#fff;--m:#a0a0a0;--d:#555;--e:cubic-bezier(.2,.7,.2,1);--mono:"JetBrains Mono",ui-monospace,Consolas,monospace}
+*{box-sizing:border-box;margin:0}
+html{background:#000}
+body{background:#000;color:var(--tx);font:14px/1.55 Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;padding:14px;min-height:100vh;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1200px;margin:auto}
+#hud{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center;background:var(--b2);border:1px solid var(--bd);border-radius:8px;padding:12px 16px;box-shadow:0 10px 30px rgba(0,0,0,.7)}
+#hud h1{font-size:15px;font-weight:700;letter-spacing:.22em;display:flex;align-items:center;gap:10px;margin-right:auto;flex-wrap:wrap}
+.beta{font:600 9px/1 Inter,system-ui,sans-serif;letter-spacing:.18em;border:1px solid #fff;background:#000;padding:3px 6px;border-radius:3px;animation:bl 3.2s ease-in-out infinite}
+@keyframes bl{50%{opacity:.5}}
+.ver,.ch{font-size:10px;font-weight:400;letter-spacing:.14em;color:var(--d)}.ch{color:var(--m)}
+.st b{display:block;font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}.st span{font-size:11px;color:var(--m)}
+.bar{height:3px;background:#1a1a1a;border-radius:2px;overflow:hidden;min-width:90px}.bar i{display:block;height:100%;background:#fff;transition:width .8s var(--e)}
+.shell{display:grid;grid-template-columns:180px 1fr;gap:14px;margin-top:14px;align-items:start}
+nav{display:flex;flex-direction:column;gap:2px;position:sticky;top:14px}
+nav button{border:0;border-left:2px solid transparent;background:transparent;color:var(--m);border-radius:0 6px 6px 0}
+nav button:hover:not(:disabled){background:var(--cd);color:#fff}
+nav button.on{background:var(--cd);color:#fff;border-left-color:#fff}
+@media(max-width:850px){.shell{grid-template-columns:1fr}nav{flex-direction:row;overflow-x:auto;position:static}nav button{white-space:nowrap;border-left:0;border-bottom:2px solid transparent;border-radius:6px 6px 0 0}nav button.on{border-bottom-color:#fff}}
+button{font:inherit;font-size:13px;color:#fff;background:#000;border:1px solid #fff;border-radius:5px;padding:7px 13px;cursor:pointer;text-align:left;transition:background .18s,color .18s,border-color .18s,transform .12s}
+button:hover:not(:disabled){background:#fff;color:#000}button:active:not(:disabled){transform:scale(.98)}
+button:disabled{color:var(--d);border-color:var(--bd);cursor:not-allowed}button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.pr{background:#fff;color:#000;font-weight:600}.pr:hover:not(:disabled){background:#000;color:#fff}.pr:disabled{background:#111;color:var(--d)}
+.tabs button.on,.row button.on{background:#fff;color:#000}
+.grid2{display:grid;grid-template-columns:1fr 1.7fr;gap:14px}.g3{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+@media(max-width:850px){.grid2{grid-template-columns:1fr}}
+.box{background:var(--cd);border:1px solid var(--bd);border-radius:8px;padding:16px;margin-bottom:14px;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.box h2{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--m);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--bd)}
+.card{background:var(--b2);border:1px solid var(--bd);border-radius:6px;padding:12px;margin-bottom:10px;transition:border-color .2s,transform .2s}
+.card:hover{border-color:var(--d);transform:translateY(-1px)}.card.sel{border-color:#fff}
+.card h3{font-size:13px;font-weight:600}.card p,.m{font-size:12px;color:var(--m);margin:4px 0 8px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.bd{font-size:10px;letter-spacing:.1em;padding:2px 8px;border-radius:3px;border:1px solid}
+.d0{color:var(--m);border-color:var(--d)}.d1{color:#fff;border-color:#fff}.d2{background:#fff;color:#000;border-color:#fff}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.ev{padding:8px 11px;border:1px solid var(--bd);border-left:2px solid var(--d);border-radius:4px;margin-bottom:6px;background:#000;color:var(--m);cursor:pointer;font-size:12.5px;transition:.15s}
+.ev:hover{border-color:var(--d);color:#fff}.ev.mk{border-left:2px solid #fff;background:#1a1a1a;color:#fff}
+.op{display:block;width:100%;margin-bottom:8px}
+.g,.cy{color:#fff;font-weight:600}.rd{color:var(--m)}
+.pb{height:3px;background:#1a1a1a;border-radius:2px;overflow:hidden;margin:8px 0}.pb i{display:block;height:100%;background:#fff;transition:width .6s var(--e)}
+.av{border-radius:8px;flex:none}.who{display:flex;gap:12px;align-items:center}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.86);display:none;align-items:center;justify-content:center;padding:14px;z-index:20;overflow:auto}.ov.on{display:flex;animation:fi .25s}
+.modal{background:var(--b2);border:1px solid var(--bd);border-radius:10px;max-width:620px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.9);animation:su .35s var(--e)}
+.modal h3{font-size:16px;margin-bottom:10px}.modal p{margin-bottom:10px}
+.note{background:#000;border:1px solid var(--bd);border-radius:6px;padding:12px 14px;margin:12px 0;font-size:13px}.note p{margin-bottom:6px;color:var(--m)}.note b{color:#fff}
+@keyframes fi{from{opacity:0}}@keyframes su{from{opacity:0;transform:translateY(14px)}}
+main.pt{animation:su .35s var(--e)}
+#toasts{position:fixed;top:12px;right:12px;z-index:90;display:flex;flex-direction:column;gap:6px;max-width:300px}
+.ts{background:#fff;color:#000;border-radius:6px;padding:9px 13px;font-size:13px;animation:su .3s var(--e),fo .4s 3.4s forwards}
+@keyframes fo{to{opacity:0;transform:translateY(-6px)}}
+.fl{position:fixed;left:50%;top:100px;font-size:24px;font-weight:700;z-index:95;pointer-events:none;transform:translateX(-50%);animation:up 1.6s forwards}
+@keyframes up{to{transform:translate(-50%,-60px);opacity:0}}
+.tr{background:#000;z-index:30}.tr .in{text-align:center;max-width:560px;animation:su .9s var(--e)}.tr h1{font-size:34px;letter-spacing:.2em;margin-bottom:14px}.tr p{margin-bottom:16px;color:var(--m)}
+#chat{position:fixed;right:14px;bottom:14px;width:320px;max-width:calc(100% - 28px);background:var(--b2);border:1px solid var(--bd);border-radius:10px;z-index:15;box-shadow:0 16px 50px rgba(0,0,0,.9);animation:su .3s var(--e)}
+#chat.hide{display:none}#cl{height:200px;overflow-y:auto;padding:10px;font:12px/1.5 var(--mono);color:var(--m)}#cl div{margin-bottom:8px}#cl b{color:#fff}
+#cin{width:100%;background:#000;border:1px solid var(--bd);color:#fff;padding:8px;font:inherit;font-size:13px;border-radius:5px}#cin:focus{outline:none;border-color:#fff}
+.chart{width:100%;background:#000;border:1px solid var(--bd);border-radius:6px}
+.pip{display:inline-block;width:14px;height:5px;border:1px solid var(--d);margin-right:3px;border-radius:1px}.pip.f{background:#fff;border-color:#fff}
+textarea{width:100%;height:80px;background:#000;color:#fff;border:1px solid var(--bd);border-radius:5px;font:12px var(--mono);margin:6px 0}
+input[type=file]{color:var(--m);font-size:12px}
+footer{text-align:center;color:var(--d);font-size:10px;letter-spacing:.2em;padding:26px 0 70px;border-top:1px solid var(--bd);margin-top:20px}
+#intro{position:fixed;inset:0;background:#000;z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:20px;transition:opacity .7s var(--e)}
+#intro.on{display:flex}#intro.out{opacity:0;pointer-events:none}
+#intro .lg{font-size:clamp(38px,11vw,88px);font-weight:800;letter-spacing:.3em;margin-right:-.3em;animation:li 1.6s var(--e) both}
+@keyframes li{from{opacity:0;filter:blur(8px);letter-spacing:.6em}}
+#intro .sub{font:12px var(--mono);letter-spacing:.3em;color:var(--m);min-height:18px}
+.cur{display:inline-block;width:7px;height:12px;background:#fff;margin-left:4px;vertical-align:-2px;animation:bl 1s steps(2) infinite}
+.scan{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#fff,transparent);opacity:.35;animation:sc 3.2s linear infinite}
+@keyframes sc{from{top:-2%}to{top:102%}}
+.ldw{width:min(340px,72vw)}.ld{height:1px;background:var(--bd)}.ld i{display:block;height:100%;width:0;background:#fff}
+.meta{display:flex;justify-content:space-between;font:10px var(--mono);letter-spacing:.2em;color:var(--d);margin-top:8px}
+#intro .ver2{font:10px var(--mono);letter-spacing:.25em;color:var(--m)}
+#istart{opacity:0;pointer-events:none;transition:opacity .7s,background .18s,color .18s;letter-spacing:.2em;text-align:center}#istart.show{opacity:1;pointer-events:auto}
+.skip{position:absolute;top:16px;right:16px;font-size:10px;letter-spacing:.18em;border-color:var(--bd);color:var(--m)}
+.sig{position:absolute;bottom:20px;font-size:10px;letter-spacing:.25em;color:var(--d);line-height:1.8}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+
+/* ==========================================================
+   QALQAN SMART DISPLAY SYSTEM — adaptive device workspaces
+   All breakpoints use CSS viewport dimensions, never physical
+   pixel resolution. The active mode is selected by JS.
+   ========================================================== */
+:root{
+ --safe-top:env(safe-area-inset-top,0px);
+ --safe-right:env(safe-area-inset-right,0px);
+ --safe-bottom:env(safe-area-inset-bottom,0px);
+ --safe-left:env(safe-area-inset-left,0px);
+ --ui-gap:clamp(8px,1vw,16px);
+ --ui-pad:clamp(10px,1.2vw,18px);
+ --ui-font:clamp(12px,0.82vw,14px);
+ color-scheme:dark;
+}
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+body{font-size:var(--ui-font);min-height:100vh;min-height:100dvh;padding:max(8px,var(--safe-top)) max(8px,var(--safe-right)) max(8px,var(--safe-bottom)) max(8px,var(--safe-left))}
+.wrap{width:100%;max-width:1200px;min-width:0}
+#hud,#nav,#main,.shell,.box,.card,.row,.grid2,.g3{min-width:0}
+#main{min-width:0}
+button,input,select,textarea{max-width:100%;font:inherit}
+button{white-space:normal;overflow-wrap:anywhere;touch-action:manipulation}
+.card h3,.card p,.box p,.note,.ev,.modal,.st span{overflow-wrap:anywhere;word-break:break-word}
+.grid2{grid-template-columns:minmax(0,1fr) minmax(0,1.7fr)}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.chart{display:block;max-width:100%}
+.ov{padding:max(10px,var(--safe-top)) max(10px,var(--safe-right)) max(10px,var(--safe-bottom)) max(10px,var(--safe-left));overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.modal{max-height:calc(100dvh - var(--safe-top) - var(--safe-bottom) - 32px);overflow-y:auto;overscroll-behavior:contain}
+#intro{min-height:100vh;min-height:100dvh;padding:calc(20px + var(--safe-top)) calc(20px + var(--safe-right)) calc(20px + var(--safe-bottom)) calc(20px + var(--safe-left));overflow:hidden}
+#intro .lg{max-width:100%;font-size:clamp(36px,7vw,88px);letter-spacing:clamp(.12em,.3em, .3em);margin-right:-.2em;overflow-wrap:normal}
+#intro .sub{max-width:100%;font-size:clamp(10px,1vw,12px);letter-spacing:clamp(.08em,.3em,.3em);overflow-wrap:anywhere}
+#intro .sig{max-width:calc(100% - 32px)}
+#chat{max-height:min(70dvh,480px);max-width:calc(100vw - 28px);overflow:hidden}
+#cl{overscroll-behavior:contain}
+
+/* MOBILE: dedicated stacked workspace + bottom navigation */
+html[data-ui-mode="mobile"] body{padding:0 0 calc(76px + var(--safe-bottom));min-height:100vh;min-height:100dvh}
+html[data-ui-mode="mobile"] .wrap{max-width:none;width:100%;padding-bottom:0}
+html[data-ui-mode="mobile"] #hud{
+ position:sticky;top:0;z-index:12;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 9px;
+ padding:calc(9px + var(--safe-top)) 11px 10px;background:rgba(8,8,8,.97);border:0;border-bottom:1px solid var(--bd);border-radius:0;box-shadow:0 7px 20px rgba(0,0,0,.72);backdrop-filter:blur(12px)
+}
+html[data-ui-mode="mobile"] #hud h1{grid-column:1/-1;margin:0;font-size:13px;letter-spacing:.12em;gap:7px}
+html[data-ui-mode="mobile"] #hud .ver{display:none}
+html[data-ui-mode="mobile"] #hud .ch{font-size:9px}
+html[data-ui-mode="mobile"] #hud .st{min-width:0}
+html[data-ui-mode="mobile"] #hud .st b{font-size:clamp(13px,4vw,17px);line-height:1.25;overflow-wrap:anywhere}
+html[data-ui-mode="mobile"] #hud .st span{font-size:10px}
+html[data-ui-mode="mobile"] #hud .bar{grid-column:1/-1;width:100%;min-width:0}
+html[data-ui-mode="mobile"] #hud button{min-height:42px;padding:8px 9px;text-align:center;font-size:11px}
+html[data-ui-mode="mobile"] .shell{display:block;margin:8px 0 0;padding:0 10px}
+html[data-ui-mode="mobile"] #nav{
+ position:fixed;left:0;right:0;top:auto;bottom:0;z-index:42;display:flex;flex-direction:row;flex-wrap:nowrap;justify-content:stretch;align-items:center;gap:3px;height:calc(64px + var(--safe-bottom));min-height:64px;max-height:80px;
+ padding:6px max(6px,var(--safe-right)) calc(6px + var(--safe-bottom)) max(6px,var(--safe-left));
+ background:rgba(5,5,5,.97);border:0;border-top:1px solid #383838;border-radius:0;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;backdrop-filter:blur(14px);scrollbar-width:none
+}
+html[data-ui-mode="mobile"] #nav::-webkit-scrollbar{display:none}
+html[data-ui-mode="mobile"] #nav button{flex:1 1 0;min-width:0;max-width:none;height:51px;min-height:51px;max-height:51px;padding:6px 3px;border:1px solid transparent;border-bottom:2px solid transparent;border-radius:7px;text-align:center;font-size:clamp(9px,2.65vw,11px);line-height:1.1;letter-spacing:0;overflow-wrap:anywhere}
+html[data-ui-mode="mobile"] #nav button.on{background:#181818;color:#fff;border-color:#383838;border-bottom-color:#fff}
+html[data-ui-mode="mobile"] #main{padding:0 0 10px;overflow:visible}
+html[data-ui-mode="mobile"] .grid2,html[data-ui-mode="mobile"] .g3{grid-template-columns:minmax(0,1fr);gap:9px}
+html[data-ui-mode="mobile"] .box{padding:13px;margin-bottom:10px;border-radius:8px}
+html[data-ui-mode="mobile"] .box h2{font-size:10px;letter-spacing:.1em}
+html[data-ui-mode="mobile"] .card{padding:11px;margin-bottom:8px}
+html[data-ui-mode="mobile"] .row{align-items:flex-start}
+html[data-ui-mode="mobile"] .row>button{flex:1 1 auto;min-width:0}
+html[data-ui-mode="mobile"] button{min-height:44px;padding:10px 11px;font-size:13px}
+html[data-ui-mode="mobile"] .ev{min-height:44px;display:flex;align-items:center;padding:10px 12px;font-size:13px;line-height:1.4;user-select:none;-webkit-user-select:none}
+html[data-ui-mode="mobile"] .tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin;overscroll-behavior-x:contain}
+html[data-ui-mode="mobile"] .tabs button{flex:0 0 auto;min-height:42px;white-space:nowrap}
+html[data-ui-mode="mobile"] .modal{width:100%;max-width:none;padding:17px 15px;border-radius:12px}
+html[data-ui-mode="mobile"] .ov{align-items:flex-start;padding-top:max(10px,var(--safe-top));padding-bottom:max(10px,var(--safe-bottom))}
+html[data-ui-mode="mobile"] #chat{left:8px;right:8px;bottom:calc(68px + var(--safe-bottom));width:auto;max-width:none;max-height:55dvh;border-radius:12px}
+html[data-ui-mode="mobile"] #cl{height:clamp(112px,24dvh,180px)}
+html[data-ui-mode="mobile"] footer{display:none}
+html[data-ui-mode="mobile"] #intro .lg{font-size:clamp(34px,12vw,62px);letter-spacing:.14em;margin-right:-.14em}
+html[data-ui-mode="mobile"] #intro .sub{font-size:10px;letter-spacing:.11em}
+html[data-ui-mode="mobile"] #intro .sig{font-size:9px;bottom:calc(10px + var(--safe-bottom));letter-spacing:.12em}
+html[data-ui-mode="mobile"] .scan{animation-duration:5s}
+html[data-ui-mode="mobile"] .card:hover{transform:none}
+html[data-ui-mode="mobile"] .soc-mobile-switch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-bottom:9px}
+html[data-ui-mode="mobile"] .soc-mobile-switch button{min-height:45px;text-align:center;font-size:11px;padding:8px 5px}
+html[data-ui-mode="mobile"] .soc-mobile-switch button.active{background:#fff;color:#000;font-weight:700}
+html[data-ui-mode="mobile"] .soc-return{width:100%;margin-bottom:9px}
+html[data-ui-mode="mobile"] .team-table-wrap{display:none}
+html[data-ui-mode="mobile"] .team-cards{display:block}
+html[data-ui-mode="mobile"] .ov{z-index:60}
+
+/* TABLET: touch-sized controls; sidebar in landscape, top rail in portrait */
+html[data-ui-mode="tablet"] body{padding:12px;min-height:100dvh}
+html[data-ui-mode="tablet"] .wrap{max-width:1500px}
+html[data-ui-mode="tablet"] #hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 12px;padding:12px}
+html[data-ui-mode="tablet"] #hud h1{grid-column:1/-1;margin:0;font-size:14px}
+html[data-ui-mode="tablet"] #hud .st b{font-size:15px}
+html[data-ui-mode="tablet"] .shell{display:grid;grid-template-columns:126px minmax(0,1fr);gap:10px;margin-top:10px}
+html[data-ui-mode="tablet"] #nav{position:sticky;top:10px;display:flex;flex-direction:column;overflow:visible;gap:4px}
+html[data-ui-mode="tablet"] #nav button{min-height:44px;padding:9px 8px;font-size:11px;text-align:left;white-space:normal}
+html[data-ui-mode="tablet"] #main{min-width:0}
+html[data-ui-mode="tablet"] .grid2{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+html[data-ui-mode="tablet"] .g3{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+html[data-ui-mode="tablet"] .box{padding:13px}
+html[data-ui-mode="tablet"] button{min-height:44px}
+html[data-ui-mode="tablet"] .team-table-wrap{display:none}
+html[data-ui-mode="tablet"] .team-cards{display:block}
+html[data-ui-mode="tablet"][data-ui-orientation="portrait"] .shell{display:flex;flex-direction:column;gap:8px}
+html[data-ui-mode="tablet"][data-ui-orientation="portrait"] #nav{position:static;width:100%;max-width:100%;align-self:stretch;flex:0 0 auto;flex-direction:row;overflow-x:auto;overflow-y:hidden;white-space:nowrap;padding-bottom:5px}
+html[data-ui-mode="tablet"][data-ui-orientation="portrait"] #nav button{flex:0 0 auto;white-space:nowrap;border-left:0;border-bottom:2px solid transparent;border-radius:6px 6px 0 0}
+html[data-ui-mode="tablet"][data-ui-orientation="portrait"] #nav button.on{border-bottom-color:#fff}
+html[data-ui-mode="tablet"][data-ui-orientation="portrait"] .grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
+html[data-ui-mode="tablet"][data-ui-orientation="portrait"] .g3{grid-template-columns:repeat(2,minmax(0,1fr))}
+html[data-ui-mode="tablet"] #chat{bottom:12px;right:12px}
+
+/* LAPTOP: compact professional workspace; inner work area scrolls */
+html[data-ui-mode="laptop"] body{height:100vh;height:100dvh;min-height:0;overflow:hidden;padding:9px}
+html[data-ui-mode="laptop"] .wrap{height:100%;max-width:none;display:flex;flex-direction:column;overflow:hidden}
+html[data-ui-mode="laptop"] #hud{flex:0 0 auto;gap:7px 13px;padding:9px 12px}
+html[data-ui-mode="laptop"] #hud h1{font-size:14px;letter-spacing:.16em}
+html[data-ui-mode="laptop"] #hud .st b{font-size:15px}
+html[data-ui-mode="laptop"] .shell{display:grid;grid-template-columns:148px minmax(0,1fr);flex:1 1 auto;min-height:0;gap:10px;margin-top:9px;overflow:hidden}
+html[data-ui-mode="laptop"] #nav{position:sticky;top:0;align-self:start;gap:2px}
+html[data-ui-mode="laptop"] #nav button{padding:7px 9px;font-size:12px}
+html[data-ui-mode="laptop"] #main{height:100%;max-height:100%;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:3px;overscroll-behavior:contain;scrollbar-gutter:stable}
+html[data-ui-mode="laptop"] .grid2{grid-template-columns:minmax(240px,.9fr) minmax(0,1.2fr);gap:10px}
+html[data-ui-mode="laptop"] .g3{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+html[data-ui-mode="laptop"] .box{padding:13px;margin-bottom:10px}
+html[data-ui-mode="laptop"] .card{padding:10px;margin-bottom:8px}
+html[data-ui-mode="laptop"] button{padding:7px 10px}
+html[data-ui-mode="laptop"] footer{flex:0 0 auto;padding:5px 0 2px;margin-top:6px;font-size:9px}
+html[data-ui-mode="laptop"] #chat{bottom:10px;right:10px}
+html[data-ui-mode="laptop"] .team-table-wrap{display:block}
+html[data-ui-mode="laptop"] .team-cards{display:none}
+
+/* DESKTOP: expanded SOC and management canvas */
+html[data-ui-mode="desktop"] body{height:100vh;height:100dvh;min-height:0;overflow:hidden;padding:12px}
+html[data-ui-mode="desktop"] .wrap{height:100%;max-width:min(1920px,calc(100vw - 24px));display:flex;flex-direction:column;overflow:hidden}
+html[data-ui-mode="desktop"] #hud{flex:0 0 auto;gap:10px 22px;padding:12px 16px}
+html[data-ui-mode="desktop"] .shell{display:grid;grid-template-columns:188px minmax(0,1fr);flex:1 1 auto;min-height:0;gap:14px;margin-top:12px;overflow:hidden}
+html[data-ui-mode="desktop"] #nav{position:sticky;top:0;align-self:start}
+html[data-ui-mode="desktop"] #main{height:100%;max-height:100%;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:5px;overscroll-behavior:contain;scrollbar-gutter:stable}
+html[data-ui-mode="desktop"] .grid2{grid-template-columns:minmax(300px,.85fr) minmax(0,1.5fr);gap:14px}
+html[data-ui-mode="desktop"] .g3{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+html[data-ui-mode="desktop"] .team-table-wrap{display:block}
+html[data-ui-mode="desktop"] .team-cards{display:none}
+html[data-ui-mode="desktop"] footer{flex:0 0 auto;padding:7px 0 3px;margin-top:7px;font-size:9px}
+
+/* Shared tablet/desktop employee data table */
+.team-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.8fr);gap:var(--ui-gap);align-items:start}
+html[data-ui-mode="tablet"] .team-layout,html[data-ui-mode="mobile"] .team-layout{grid-template-columns:minmax(0,1fr)}
+.team-table-wrap{display:none;width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+.team-table{width:100%;border-collapse:collapse;min-width:650px;font-size:12px;text-align:left}
+.team-table th,.team-table td{padding:9px 8px;border-bottom:1px solid var(--bd);vertical-align:middle}
+.team-table th{color:var(--m);font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+.team-table td:first-child{min-width:155px}
+.team-table .staff-actions{display:flex;gap:5px;flex-wrap:wrap}
+.team-table .staff-actions button{font-size:11px;padding:6px 8px;min-height:35px}
+.team-cards{display:none}
+.device-settings{border:1px solid var(--bd);background:#050505;border-radius:7px;padding:13px;margin:10px 0 14px}
+.device-settings h4{font-size:11px;letter-spacing:.14em;color:#fff;margin-bottom:10px}
+.device-settings label{display:block;color:var(--m);font-size:11px;margin-bottom:7px}
+.device-settings select{width:100%;min-height:42px;background:#000;color:#fff;border:1px solid #555;border-radius:5px;padding:8px 10px;margin-top:5px}
+.device-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:11px 0}
+.device-facts>div{background:#0b0b0b;border:1px solid #252525;border-radius:5px;padding:8px;min-width:0}
+.device-facts span{display:block;font-size:9px;color:var(--m);letter-spacing:.08em;text-transform:uppercase}
+.device-facts b{display:block;font-size:12px;overflow-wrap:anywhere;margin-top:3px}
+.device-settings .m{margin:8px 0 0}
+
+/* Touch and hover are progressively enhanced, never required */
+@media (hover:hover) and (pointer:fine){button:hover:not(:disabled){filter:brightness(1.12)}.ev:hover{background:#151515}}
+@media (hover:none){.card:hover{transform:none}.ev:hover{border-color:var(--bd);color:var(--m)}}
+@media (pointer:coarse){button{min-height:44px}.ev{min-height:44px}}
+@media (prefers-reduced-motion:reduce){#intro .scan,.beta{animation:none!important}.card,.ev,button{transition:none!important}}
+@media (max-height:470px) and (orientation:landscape){
+ html[data-ui-mode="mobile"] #intro{gap:8px;padding-top:calc(8px + var(--safe-top));padding-bottom:calc(8px + var(--safe-bottom))}
+ html[data-ui-mode="mobile"] #intro .sig{display:none}
+ html[data-ui-mode="mobile"] #intro .lg{font-size:clamp(30px,9vw,46px)}
+ html[data-ui-mode="mobile"] .modal{max-height:calc(100dvh - 12px);padding:12px}
+}
+@media (max-width:360px){
+ html[data-ui-mode="mobile"] #hud{gap:6px;padding-left:8px;padding-right:8px}
+ html[data-ui-mode="mobile"] #nav{gap:1px;padding-left:3px;padding-right:3px}
+ html[data-ui-mode="mobile"] #nav button{font-size:9px;padding-left:1px;padding-right:1px}
+ html[data-ui-mode="mobile"] .shell{padding-left:7px;padding-right:7px}
+ html[data-ui-mode="mobile"] .device-facts{grid-template-columns:1fr 1fr}
+}
+
+</style></head><body>
+<div class="wrap"><header id="hud"></header><div class="shell"><nav id="nav"></nav><main id="main"></main></div><footer>QALQAN © 2026 &nbsp;·&nbsp; MADE BY ABDUALI &nbsp;·&nbsp; VERSION 3.0.0</footer></div>
+<div id="toasts"></div><div class="ov" id="ov"><div class="modal" id="modal"></div></div><div class="ov tr" id="tr"></div>
+<div id="chat" class="hide"><div class="row" style="padding:8px 10px;border-bottom:1px solid var(--bd)"><div class="who" id="chh"></div><button onclick="$('chat').classList.add('hide')">✕</button></div>
+<div id="cl"></div><div style="padding:8px"><div class="row" style="margin-bottom:6px"><button onclick="ask('Подсказка')">Подсказка</button><button onclick="ask('Объясни ошибку')">Объясни ошибку</button></div><input id="cin" placeholder="Спроси Айдара: фишинг, SIEM, порты…" onkeydown="if(event.key=='Enter'){ask($('cin').value);$('cin').value=''}"></div></div>
+<div id="intro" role="dialog" aria-label="QALQAN"><div class="scan"></div><button class="skip" onclick="introEnd()">SKIP INTRO</button>
+<div class="lg">QALQAN</div><div class="sub"><span id="itx"></span><span class="cur"></span></div><span class="beta">BETA</span>
+<div class="ldw"><div class="ld"><i id="ibar"></i></div><div class="meta"><span id="ist"></span><span id="ipc">0%</span></div></div>
+<div class="ver2">VERSION 2.0.0 — BETA</div><button id="istart" class="pr" onclick="introEnd()">[ START SYSTEM ]</button>
+<div class="sig">QALQAN © 2026<br>MADE BY ABDUALI</div></div>
+<script>
+const $=i=>document.getElementById(i),pick=a=>a[Math.random()*a.length|0],cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+const SHIELD='<svg width="18" height="20" viewBox="0 0 18 20" fill="none" stroke="#fff" stroke-width="1.5"><path d="M9 1l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V4z"/><path d="M6 10l2 2 4-4"/></svg>';
+const fm=n=>(n<0?"-$":"$")+Math.abs(Math.round(n)).toLocaleString("en-US");
+const hue=s=>Math.abs([...s].reduce((a,c)=>a*31+c.charCodeAt(0)|0,7))%360;
+const av=(h,s=42)=>{const l=55+h%35;return`<svg class="av" width="${s}" height="${s}" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#0a0a0a" stroke="#555"/><circle cx="20" cy="15" r="7" fill="hsl(0,0%,${l}%)"/><path d="M6 37c1-9 7-13 14-13s13 4 14 13z" fill="hsl(0,0%,${l-25}%)"/></svg>`};
+// ===== ДАННЫЕ =====
+const LV=[0,80,200,380,620,920,1300,1800,2500,3500],TT=["Intern","Junior SOC Analyst","Junior SOC Analyst","Middle Security Analyst","Middle Security Analyst","Senior Security Engineer","Senior Security Engineer","Team Lead","Team Lead","Team Lead"];
+const CH={A:{n:"Айдар",r:"Senior SOC Analyst",s:"Расследования, наставничество",c:"Спокойный наставник: «сначала улики, потом выводы»",h:150,q:["Отличная работа! Улики → причина → действие.","Видишь, как всё сходится? Запомни этот паттерн."]},
+D:{n:"Дана",r:"Специалист по сетевой безопасности",s:"Файрволы, трафик",c:"Прямая и точная, терпеть не может лишние открытые порты",h:190,q:["Сеть не прощает небрежности. Хорошо закрыл дыру.","Следи за периметром, всё начинается с него."]},
+T:{n:"Тимур",r:"Cloud Security Engineer",s:"Облака, IAM",c:"Шутник и фанат автоматизации",h:270,q:["Облако — чужой компьютер. Права давай по минимуму!","Автоматизируй проверки, и ночью будешь спать."]},
+R:{n:"Арман",r:"Руководитель компании",s:"Бизнес и клиенты",c:"Строгий, ценит результат и репутацию",h:35,q:["Результат важнее объяснений. Продолжай."]}};
+const SK=[["fw","N","Firewall Management"],["nm","N","Network Monitoring"],["ta","N","Traffic Analysis"],["la","S","Linux Administration"],["ep","S","Endpoint Protection"],["vm","S","Vulnerability Management"],["si","O","SIEM"],["ti","O","Threat Intelligence"],["ir","O","Incident Response"],["id","C","Identity Management"],["cm","C","Cloud Monitoring"],["ac","C","Access Control"]];
+const CN={N:"Network Security",S:"System Security",O:"Security Operations",C:"Cloud Security"};
+const DN=["EASY","NORMAL","HARD"],RW=[750,1100,1700],XPR=[40,70,110],TB=[8,12,16],RQ=[1,2,3],NEED=[1,2,4];
+const LB=["Что произошло","Название угрозы","Как обнаружили","Как реагировать","Технологии","Запомни"];
+// ev: "!" в начале = подозрительная улика. c: возможные причины (для NORMAL/HARD). a: действия.
+const INC=[
+{t:"ALERT #1038 — Письмо бухгалтеру",d:0,by:"A",cat:"O",ev:{"Письмо":["От: billing@kaspi-secure-pay.top","!Домен не принадлежит банку","!Вложение invoice.zip.exe","!Давит на срочность: блокировка через 2 часа"],"IP-адреса":["!185.220.101.4 — известный фишинговый хост","10.0.4.12 — ПК бухгалтера"]},
+ a:[["Не открывать, пометить как фишинг, сообщить в ИБ, заблокировать домен",1],["Открыть вложение в песочнице",0,"Файл .exe под видом архива не открывают вообще."],["Ответить отправителю",0,"Ответ подтверждает, что адрес живой."],["Просто удалить и забыть",0,"Коллеги получили такое же письмо, нужно предупредить ИБ."]],
+ l:["Бухгалтеру пришло письмо с вредоносным вложением.","Фишинг","Признаки: чужой домен, двойное расширение, срочность.","Не открывать, сообщить в ИБ, заблокировать домен и отправителя.","Почтовый шлюз, репутация доменов, песочница.","Давление «срочно!» — главный признак обмана."]},
+{t:"ALERT #1040 — Открытый порт на web-01",d:0,by:"D",cat:"N",ev:{"Журналы":["!nmap: порт 23/tcp (Telnet) открыт наружу","!Внешний IP 203.0.113.9 пытается войти по Telnet","Порт 443 (HTTPS) открыт — это норма"],"Сервер":["web-01: Ubuntu 22.04","!Правило файрвола: allow 23/tcp from any"]},
+ a:[["Закрыть порт: ufw deny 23/tcp",1],["Перезагрузить сервер",0,"После перезагрузки Telnet снова слушает порт."],["Открыть ещё и порт 22 для всех",0,"Это про SSH и ничего не закрывает."],["Удалить логи",0,"Ты уничтожаешь улики, а дыра остаётся."]],
+ l:["Сервер светил наружу небезопасным Telnet.","Избыточная поверхность атаки","Внешний сканер портов и журнал входов.","Закрыть порт правилом файрвола, перейти на SSH.","Файрвол (ufw), сканеры, hardening.","Открыто только то, что нужно."]},
+{t:"ALERT #1042 — Нагрузка на сервере банка",d:1,by:"A",cat:"S",ev:{"Процессы":["nginx — CPU 2%","!xmrig (PID 4821) — CPU 398%, пользователь www-data","postgres — CPU 4%","!cron: @reboot /tmp/.x/xmrig"],"Журналы":["!Нагрузка 15.2 с 03:12","!Загрузка архива в /tmp с 91.121.5.7","Ночной бэкап завершён"]},
+ c:[["Взлом веб-приложения и запуск майнера",1],["Сбой жёсткого диска",0],["Плановое обновление",0]],
+ a:[["Остановить xmrig, удалить файлы и cron-задачу, закрыть уязвимость",1],["Убить nginx",0,"Это легальный сервис: сайт упадёт, майнер продолжит."],["Докупить мощности",0,"Деньги на железо не лечат взлом."],["Ничего не делать",0,"Взломщик уже внутри."]],
+ l:["Взломщик запустил на сервере криптомайнер.","Cryptojacking","Аномальный CPU и подозрительный процесс.","kill -9 PID, чистка автозапуска, закрыть вход.","top/ps, EDR, SIEM-алерт по нагрузке.","Мало убить процесс: найди вход."]},
+{t:"ALERT #1051 — Сотни неудачных входов",d:1,by:"D",cat:"N",ch:[2,"Дело #1042",["!IP 198.51.100.77 уже встречался в деле #1042: тот же оператор","!Тот же ASN, что у загрузки майнера"]],ev:{"Авторизации":["!3 412 неудачных входов root за 4 минуты с 198.51.100.77","!Затем успешный вход admin с того же IP","Успешный вход: aidar с 10.0.1.5"],"IP-адреса":["!198.51.100.77 — в базе TI как сканер","10.0.1.5 — офис"]},
+ c:[["Брутфорс и компрометация слабого пароля admin",1],["DDoS-атака",0],["Сотрудник забыл пароль",0]],
+ a:[["Заблокировать IP, сменить пароль admin, включить MFA и fail2ban",1],["Разрешить вход root без пароля",0,"Это ключи от квартиры взломщику."],["Выключить сервер",0,"Бизнес встанет, а причина не устранена."],["Только поднять лимит попыток",0,"Станет легче перебирать."]],
+ l:["Злоумышленник подобрал слабый пароль.","Brute-force","Всплеск неудачных входов, затем успешный вход.","Блок IP, смена пароля, MFA.","fail2ban, MFA, SIEM-корреляция.","Длинный пароль + MFA = защита."]},
+{t:"ALERT #1057 — Публичный бакет клиентов",d:1,by:"T",cat:"C",ev:{"Облако":["bucket clients-docs: Public-read","!Политика: Principal * разрешает s3:GetObject","В бакете: договоры и паспорта (4 200 файлов)","!Скачивания с 45.9.148.3 без авторизации: 900"],"Журналы":["!Рост запросов ListBucket из интернета","Плановый бэкап — норма"]},
+ c:[["Неверные настройки доступа: бакет открыт всем",1],["Вирус на ноутбуке админа",0],["Сбой провайдера",0]],
+ a:[["Закрыть публичный доступ, права по минимуму, проверить журналы доступа",1],["Удалить бакет",0,"Потеряешь данные и улики."],["Оставить: ссылку никто не знает",0,"Секретность адреса — не защита."],["Переименовать бакет",0,"Политика остаётся открытой."]],
+ l:["Документы клиентов были доступны всем в интернете.","Cloud misconfiguration","Облачный аудит и логи доступа.","Закрыть публичный доступ, принцип наименьших привилегий.","IAM, CSPM, облачный мониторинг.","Права в облаке выдаём минимальные."]},
+{t:"ALERT #1063 — Подозрительная сетевая активность",d:1,by:"D",cat:"N",ev:{"IP-адреса":["!10.0.7.31 — 40 ГБ исходящего на 185.234.1.9 ночью","!Соединения ровно каждые 60 секунд (beacon)","10.0.7.5 — принтер"],"Журналы":["!DNS-запросы на длинные случайные домены","Бэкап в 02:00 — норма"]},
+ c:[["Заражённый хост связывается с C2 и сливает данные",1],["Облачный бэкап",0],["Обновление ОС",0]],
+ a:[["Изолировать хост, заблокировать IP и домены, снять дамп памяти",1],["Отключить Wi-Fi всем",0,"Остановишь всех, но не решишь проблему."],["Игнорировать: это же ночью",0,"Ночью атакуют чаще всего."],["Перезагрузить роутер",0,"Хост останется заражённым."]],
+ l:["Заражённый компьютер передавал данные наружу.","Data exfiltration / C2","Аномальный трафик и периодические соединения.","Изоляция хоста, блок адресов, анализ.","NDR, DNS-мониторинг, SIEM.","Регулярный beacon — признак управления."]},
+{t:"ALERT #1070 — Критическая уязвимость",d:1,by:"A",cat:"S",ev:{"Сервер":["!OpenSSL — версия с критической уязвимостью (CVSS 9.8)","!Последнее обновление пакетов: 214 дней назад","Бэкапы работают"],"Журналы":["!120 попыток эксплуатации из интернета за час","Плановые перезагрузки — норма"]},
+ c:[["Не установлены патчи безопасности",1],["Слабый пароль",0],["Фишинг",0]],
+ a:[["apt update && apt upgrade, перезапуск сервисов",1],["Скрыть версию ПО",0,"Дыра остаётся."],["chmod 777 /",0,"Ты ломаешь защиту сам."],["Подождать",0,"Сканеры найдут тебя за часы."]],
+ l:["Сервер работал с известной уязвимостью.","Unpatched vulnerability (RCE)","Сканер уязвимостей и логи.","Срочно установить патч.","Vulnerability management, patch management.","Патч — самая дешёвая защита."]},
+{t:"ALERT #1088 — Шифровальщик в финотделе",d:2,by:"A",cat:"S",ch:[0,"Дело #1038",["!Домен отправителя совпадает с фишингом из дела #1038"]],ev:{"Журналы":["!Массовое переименование файлов в *.locked","!README_DECRYPT.txt: выкуп 2 BTC","!ПК пытается подключиться к \\\\fileserver","Антивирус отключён 2 дня назад"],"Процессы":["!enc.exe — диск 100%, запущен из «Загрузок»","explorer.exe — норма"],"Письмо":["!Вложение «Счёт.docm» открыто вчера в 17:40","Отправитель отличается от партнёра на 1 букву"]},
+ c:[["Шифровальщик через вредоносное вложение",1],["Сбой диска",0],["Обновление Windows",0]],
+ a:[["Изолировать ПК от сети, сообщить в ИБ, восстановить из бэкапа",1],["Заплатить выкуп",0,"Гарантий нет, и тебя запомнят как платящего."],["Продолжить работу",0,"Вирус шифрует сетевые папки."],["Скопировать файлы на флешку",0,"Перенесёшь заражённое."]],
+ l:["Вирус зашифровал файлы и требует выкуп.","Ransomware","Массовое переименование файлов, записка.","Изоляция, сообщение, восстановление из бэкапа.","EDR, резервные копии, сегментация сети.","Хороший бэкап лучше выкупа."]},
+{t:"ALERT #1095 — Утечка базы пользователей",d:2,by:"A",cat:"O",ch:[3,"Дело #1051",["!192.0.2.88 из той же подсети, что брутфорс из дела #1051"]],ev:{"Журналы":["!POST /login login=' OR '1'='1' --","!Запрос вернул всех пользователей, вход без пароля","!Выгрузка users: 52 000 строк за 20 секунд"],"IP-адреса":["!192.0.2.88 — Tor-выход, 70 запросов к /login","10.0.0.5 — балансировщик"],"Сервер":["!Пароли в базе хранятся как MD5 без соли","!Запросы собираются конкатенацией строк"]},
+ c:[["SQL-инъекция и утечка данных",1],["Брутфорс",0],["Фишинг админа",0]],
+ a:[["Параметризованные запросы, WAF, смена паролей, уведомить пользователей",1],["Скрыть форму входа",0,"Атакующий шлёт запросы напрямую."],["Склеивать строки аккуратнее",0,"Конкатенация остаётся уязвимой."],["Разрешить только буквы",0,"Частичный фильтр, легко обходится."]],
+ l:["Через форму входа выгрузили базу пользователей.","SQL Injection / Data breach","Странные запросы в логах и огромная выгрузка.","Параметризованные запросы, WAF, уведомление.","WAF, SIEM, безопасная разработка.","Никогда не клей ввод в SQL."]}];
+const KB=[[/фишинг/,"Фишинг — обман ради пароля или запуска вредоноса. Смотри домен, срочность, вложения."],[/майнер|xmrig/,"Майнер жжёт твой CPU. Ищи процесс с аномалией и закрепление в cron."],[/ransom|шифров|выкуп/,"Ransomware: сначала изоляция хоста, потом бэкап. Выкуп ничего не гарантирует."],[/sql|инъекц/,"SQL-инъекция лечится параметризованными запросами, а не фильтрами."],[/siem/,"SIEM собирает логи со всей инфраструктуры и ищет аномалии. Глаза SOC."],[/edr/,"EDR следит за конечными точками и умеет изолировать заражённый хост."],[/порт|файрвол|firewall/,"Файрвол пропускает или блокирует трафик по правилам. Запрещено всё, что явно не разрешено."],[/mfa|парол|брутфорс/,"Длинные пароли, MFA и блокировка после неудач гасят брутфорс."],[/облак|bucket|iam/,"В облаке главный риск — неверные права. Минимум доступа, проверка публичных ресурсов."]];
+const SP={SOC:["SOC Analyst",3100],NET:["Network Security Engineer",3600],PEN:["Penetration Tester",4700],CLD:["Cloud Security Engineer",4400],IR:["Incident Response Specialist",4100],ARC:["Security Architect",5900],PM:["Project Manager",3900]};
+const FN=["Алия Серикова","Нурлан Ахметов","Мадина Омарова","Ержан Касымов","Камила Бекова","Бауыржан Жумабаев","Сабина Нургалиева","Руслан Тулегенов","Аружан Даулетова","Данияр Мусин","Томирис Абенова","Алмас Кенжебаев"];
+const OF=[["Маленький офис",0,4,40],["Современный офис",9000,10,110],["SOC Operations Center",45000,20,300]];
+const UP=[["siem","SIEM Platform",12000,25,"Скорость проектов +12%"],["ti","Threat Intelligence Platform",15000,30,"Риск инцидентов у клиентов −50%"],["edr","EDR Platform",14000,28,"Качество проектов +6"],["tc","Обучающий центр",10000,20,"Обучение −40% цены и времени, сильнее кандидаты"],["srv","Серверная инфраструктура",18000,35,"Скорость +8%, качество +3"],["alm","Филиал в Алматы",14000,90,"+4 места"],["ast","Филиал в Астане (после Алматы)",20000,120,"+5 мест"],["intl","Международный офис (нужна деловая репутация 55)",45000,200,"+6 мест, международные контракты"]];
+const CT=[
+{n:"Аудит безопасности интернет-магазина",cl:"АлмаТрейд",k:"Малый бизнес",qe:55,pay:7500,days:14,need:{PEN:1},d:0,risk:10,mr:0,cat:"S"},
+{n:"Мониторинг корпоративной сети",cl:"СтепьТелеком",k:"Телеком",qe:60,pay:13000,days:20,need:{SOC:1,NET:1},d:0,risk:15,mr:5,cat:"N"},
+{n:"Аудит облачной среды",cl:"Нур Логистик",k:"Средняя компания",qe:65,pay:27000,days:24,need:{CLD:1,PEN:1},d:1,risk:20,mr:12,cat:"C"},
+{n:"План реагирования на инциденты",cl:"Сарыарка Энерго",k:"Крупное предприятие",qe:70,pay:29000,days:22,need:{IR:1,PM:1},d:1,risk:20,mr:20,cat:"O"},
+{n:"Проверка инфраструктуры банка",cl:"Алтын Банк",k:"Банк",qe:80,pay:47000,days:30,need:{PEN:1,SOC:1,ARC:1},d:2,risk:30,mr:30,cat:"S"},
+{n:"Защита телеком-инфраструктуры",cl:"Каспий Связь",k:"Телеком",qe:80,pay:72000,days:34,need:{NET:2,SOC:1,IR:1},d:2,risk:30,mr:40,cat:"N"},
+{n:"Разработка SOC для предприятия",cl:"Тенгри Нефтегаз",k:"Крупное предприятие",qe:85,pay:115000,days:45,need:{ARC:1,SOC:2,IR:1,PM:1},d:2,risk:35,mr:55,cat:"O"},
+{n:"Национальный проект «Цифровой Қалқан»",cl:"Агентство цифрового развития",k:"Государственная организация",qe:85,pay:230000,days:60,need:{ARC:2,PEN:1,NET:1,CLD:1,SOC:2,IR:1,PM:1},d:2,risk:40,mr:70,cat:"O"},
+{n:"Аудит международного банка",cl:"Eurasia Capital Group",k:"Международная корпорация",qe:90,pay:280000,days:55,need:{ARC:1,PEN:2,SOC:2,IR:1},d:2,risk:40,mr:60,cat:"S",ox:"intl"},
+{n:"Глобальный SOC 24/7",cl:"Trans-Asia Holding",k:"Международная корпорация",qe:92,pay:450000,days:70,need:{ARC:2,SOC:4,NET:2,IR:2,PM:1},d:2,risk:45,mr:75,cat:"O",ox:"intl"}];
+const DEC=[{q:"Этап 1. Скоуп и разведка",o:[["Детальный сбор данных у клиента",12,2,0],["Стандартный чек-лист",5,0,0],["Начать сразу, без согласований",-8,-2,0,1]]},
+{q:"Этап 2. Выполнение",o:[["Закупить доп. инструменты (4% бюджета)",14,0,.04],["Работать штатными средствами",4,0,0],["Пропустить часть проверок ради скорости",-10,-2,0,1]]},
+{q:"Этап 3. Отчёт и сдача",o:[["Подробный отчёт и брифинг руководству",10,1,0],["Стандартный отчёт",3,0,0],["Сдать черновик",-12,-2,0,1]]}];
+const EV=[
+["Срочный запрос от банка","Алтын Банк просит взяться за срочную проверку вне очереди. Команда устанет, но премия хорошая.",[["Взяться (+$4,000, усталость +15)",{m:4000,r:1,fa:15}],["Отказаться",{r:-1}]],s=>s.br>=15&&s.staff.length>=2],
+["Конкурент переманивает сотрудника","Самому недовольному специалисту предложили зарплату выше.",[["Контрпредложение (−$1,500, настроение +20)",{m:-1500,cool:20}],["Отпустить",{lose:1,r:-1}]],s=>s.staff.length>=2&&s.staff.some(e=>e.jo<70)],
+["Неожиданная проверка","Пришла проверка требований по защите данных.",[["Подготовиться (−$1,200)",{m:-1200,r:3}],["Проигнорировать (штраф)",{m:-3500,r:-4}]],s=>1],
+["Новая киберугроза","Найдена критическая уязвимость в продукте, который используют ваши клиенты.",[["Предупредить клиентов (−$1,500)",{m:-1500,r:3,s:6}],["Не реагировать",{s:-6,r:-2}]],s=>s.con>=1],
+["Предложение инвестора","Инвестор даёт $18,000 за долю прибыли (налоги +2%).",[["Принять",{m:18000,tx:.02}],["Отказаться",{r:1}]],s=>s.br>=30&&s.staff.length>=3&&s.taxx==0],
+["Международное партнёрство","Европейская компания предлагает партнёрство.",[["Вступить (−$3,000)",{m:-3000,r:6}],["Отказаться",{}]],s=>s.br>=55],
+["Инцидент у постоянного клиента","У клиента утечка, он просит помощи.",[["Помочь бесплатно (−$800)",{m:-800,s:8,r:2}],["Выставить счёт (+$2,500)",{m:2500,s:-3}]],s=>Object.keys(s.rc).some(i=>s.rc[i]>=1)],
+["Клиент недоволен качеством","Заказчик жалуется на сроки и качество отчётов.",[["Доработать за свой счёт (−$1,500)",{m:-1500,s:10}],["Проигнорировать",{s:-8,r:-3}]],s=>s.sat<65&&s.con>=1],
+["Конкурент демпингует","Конкурент предлагает вашим клиентам услуги дешевле.",[["Бонус клиентам (−$2,000)",{m:-2000,s:5}],["Не снижать цену",{r:-1}]],s=>s.con>=3],
+["Сотрудник заболел","Один из свободных специалистов слёг на 6 дней.",[["Оплатить лечение (−$400)",{m:-400,sick:1,cool:5}],["Без выплат",{sick:1,cool:-10}]],s=>s.staff.some(e=>!e.pr&&!e.busy)],
+["Срочный контракт от крупного клиента","Крупный клиент хочет закрыть задачу за неделю и платит премию.",[["Принять (+$8,000, усталость +20)",{m:8000,r:2,fa:20}],["Отказать",{r:-1}]],s=>s.br>=40&&s.staff.length>=5]];
+const AC=[["fi","First Incident","Реши первый инцидент",s=>s.inc>=1],["f10","First $10,000","Накопи $10,000",s=>s.ch>=2],["fe","First Employee","Найми сотрудника",s=>s.hired>=1],["fc","First Client","Возьми первого клиента",s=>Object.keys(s.cl).length>=1],["c10","10 Successful Contracts","Заверши 10 контрактов",s=>s.con>=10],["sm","SOC Master","Реши все инциденты",s=>Object.keys(s.done).length>=INC.length],["se","Security Expert","8 уровней навыков",s=>Object.values(s.sk).reduce((a,b)=>a+b,0)>=8],["fm","First Million","Баланс $1,000,000",s=>s.max>=1e6],["kz","Kazakhstan Cyber Leader","Репутация 90+ и 10 контрактов",s=>s.br>=90&&s.con>=10]];
+// ===== СОСТОЯНИЕ =====
+const fresh=()=>({ch:1,xp:0,spent:0,sk:{},money:500,pr:10,br:0,sat:60,debt:0,led:[],rn:{},gcd:0,gl:{},warn:0,done:{},inc:0,con:0,ach:{},cur:null,day:0,staff:[],cands:[],proj:[],hist:[],of:{tier:0,siem:0,ti:0,edr:0,tc:0,srv:0,alm:0,ast:0,intl:0},cd:{},rc:{},taxx:0,cap:0,cl:{},hired:0,max:0,story:0,rev:0,exp:0,nid:1,speed:1,over:0,lastErr:"",schema:3,personal:{cash:500,income:0,expenses:0},player:{cash:500,income:0,expenses:0},company:{name:"QALQAN CYBER",balance:0,revenue:0,expenses:0,capex:0,reputation:0,clientSatisfaction:60,employees:[],clients:{},contracts:[],capitalInvested:0},clientData:{},eventNext:9,eventCurrent:null,eventCooldowns:{},contractSeq:1,completedContracts:{},contractHistory:[],missionHistory:[],workDay:0,gigMonth:0,gigCount:0,restructureUsed:0,missedPayroll:0,payrollArrears:0});
+let S=fresh(),view="work",T=null;
+const lvl=()=>LV.filter(x=>S.xp>=x).length,pts=()=>lvl()-1-S.spent;
+const gdone=()=>Object.keys(S.gl).length;
+const title=()=>lvlTitle();
+const catLv=c=>SK.filter(k=>k[1]==c).reduce((s,k)=>s+(S.sk[k[0]]||0),0);
+const NP=[0,5,15];
+function rpu(k,d){S[k]=cl(S[k]+d,0,100)}
+function fin(d,why){S.money+=d;if(S.ch==2){if(d>0)S.rev+=d;else S.exp-=d}S.max=Math.max(S.max,S.money);S.led.unshift([S.day,why,Math.round(d)]);if(S.led.length>30)S.led.pop()}
+const evOf=x=>{const e=Object.assign({},x.ev||{});if(x.ch&&S.done&&S.done[x.ch[0]])e[x.ch[1]]=x.ch[2];return e};
+const loyal=i=>S.sat>=70&&(S.rc[i]||0)>=2;
+const price=i=>{const rc=S.rc[i]||0,clt=S.clientData?.[CT[i].cl],trust=clt?clt.trust:60;return Math.round(CT[i].pay*cl(.90+S.br/500,.9,1.16)*cl(.92+(trust-50)/500,.84,1.08)*(rc>=2&&trust>=72?1+Math.min(.06,(rc-1)*.02):Math.max(.88,1-Math.max(0,rc-1)*.015)))};
+const xt=p=>Math.max(0,p.st.length-Object.values(CT[p.c].need).reduce((a,b)=>a+b,0));
+const GL=[["g1","Первый постоянный клиент","2 проекта для одного клиента и удовлетворённость ≥70",s=>Object.keys(s.rc).some(i=>s.rc[i]>=2)&&s.sat>=70,2500],["g2","Первая команда","Нанять 4 сотрудников",s=>s.staff.length>=4,1500],["g3","Полноценный SOC","Офис SOC Operations Center + SIEM",s=>s.of.tier>=2&&s.of.siem,4000],["g4","Крупный корпоративный контракт","Завершить контракт крупного заказчика",s=>[5,6,7].some(i=>s.rc[i]),6000],["g5","20 сотрудников","Команда из 20 человек",s=>s.staff.length>=20,8000],["g6","Филиал в Алматы","Открыть филиал",s=>s.of.alm,2500],["g7","Филиал в Астане","Открыть филиал",s=>s.of.ast,3500],["g8","Международный рынок","Международный офис и контракт",s=>s.of.intl&&(s.rc[8]||s.rc[9]),12000],["g9","Лидер отрасли Казахстана","Деловая репутация 90+, 15 контрактов, 15 сотрудников",s=>s.br>=90&&s.con>=15&&s.staff.length>=15,25000]];
+const gbox=()=>`<div class="box"><h2>Долгосрочные цели · ${gdone()}/${GL.length}</h2>${GL.map(g=>`<div class="row m" style="margin:0 0 4px;${S.gl[g[0]]?"color:#fff":""}"><span>${S.gl[g[0]]?"✓":"—"} ${g[1]}</span><span>${g[2]}</span></div>`).join("")}</div>`;
+const fbox=()=>financialBox();
+const ucan=k=>{const u=UP.find(x=>x[0]==k);return!S.of[k]&&S.money>=u[2]&&!(k=="intl"&&S.br<55)&&!(k=="ast"&&!S.of.alm)};
+function save(){try{localStorage.setItem("qalqan2",JSON.stringify(S))}catch(e){}}
+function load(){try{const j=localStorage.getItem("qalqan2");if(j){const o=JSON.parse(j);if(o&&o.ch){S=Object.assign(fresh(),o);S.staff.forEach(e=>{e.fa=e.fa||0;if(e.jo==null)e.jo=70;e.tr=e.tr||0})}return 1}}catch(e){}return 0}
+function toast(t){const d=document.createElement("div");d.className="ts";d.textContent=t;$("toasts").appendChild(d);setTimeout(()=>d.remove(),3800)}
+function pop(t){const d=document.createElement("div");d.className="fl";d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),1700)}
+function mdl(h){$("modal").innerHTML=h;$("ov").classList.add("on")}
+function closeM(){$("ov").classList.remove("on")}
+function addXP(n){const b=lvl();S.xp+=n;if(lvl()>b){toast("Новый уровень: "+title()+" · +1 очко навыка");pop("LEVEL UP")}}
+function chk(){AC.forEach(a=>{if(!S.ach[a[0]]&&a[3](S)){S.ach[a[0]]=1;toast("Достижение: "+a[1]);pop("★")}})}
+// ===== ЧАТ =====
+function say(w,t){const c=CH[w]||CH.A,d=document.createElement("div");d.innerHTML="<b>"+c.n+":</b> ";d.appendChild(document.createTextNode(t));$("cl").appendChild(d);$("cl").scrollTop=1e9}
+function sayMe(t){const d=document.createElement("div");d.textContent="Ты: "+t;d.className="m";$("cl").appendChild(d)}
+function hint(){const c=S.cur;if(!c)return "Выбери алерт слева. Начинай с лёгких, сложные откроются с ростом уровня.";const x=INC[c.i];
+ if(c.ph==0){const u=Object.keys(evOf(x)).find(t=>!c.op[t]);return u?"Ты ещё не открыл «"+u+"». Загляни туда.":"Отметь подозрительное: странные IP, ночные события, необычные процессы."}
+ return c.ph==1?"Какая причина объясняет ВСЕ улики сразу?":"Выбери действие, которое останавливает угрозу, не уничтожает улики и не ломает бизнес."}
+function ask(q){if(!q.trim())return;sayMe(q);const l=q.toLowerCase();let a;
+ if(/подсказ|помоги|что делать/.test(l))a=hint();else if(/ошиб|почему/.test(l))a=S.lastErr||"Ошибок пока нет. Иди по шагам: улики, причина, действие.";
+ else{const k=KB.find(x=>x[0].test(l));a=k?k[1]:"Спроси про фишинг, майнер, ransomware, SQL, SIEM, EDR, порты или облако."}
+ setTimeout(()=>say("A",a),250)}
+function chat(){$("chat").classList.remove("hide");$("chh").innerHTML=av(CH.A.h,34)+"<div><b>Айдар</b><div class='m' style='margin:0'>Senior SOC Analyst</div></div>"}
+// ===== ГЛАВА 1 =====
+function openInc(i){S.cur={i,op:{},mk:{},ph:0,tm:0,er:0,bad:{},t:null};render();say(INC[i].by,"Берём "+INC[i].t.split("—")[0]+". Начни с источников данных.");if(DISPLAY.mode==="mobile")$("chat").classList.add("hide");else chat()}
+function openTab(t){const c=S.cur;if(!c.op[t]){c.op[t]=1;if(catLv(INC[c.i].cat)<2)c.tm++}c.t=t;render()}
+function mark(t,j){const c=S.cur,k=t+"|"+j;c.mk[k]=!c.mk[k];render()}
+function stats(){const c=S.cur,x=INC[c.i];let ok=0,fl=0,fa=0;for(const t in evOf(x))evOf(x)[t].forEach((s,j)=>{const f=s[0]=="!",m=c.mk[t+"|"+j];if(f)fl++;if(f&&m)ok++;if(!f&&m)fa++});return{ok,fl,fa,need:Math.min(RQ[x.d],fl)}}
+function toDecide(){S.cur.ph=INC[S.cur.i].d?1:2;render();say("A","Улики собраны. Теперь решение.")}
+function fail(msg,m,t){const c=S.cur;c.er++;c.tm+=t;fin(-Math.min(S.money,m),"штраф");rpu("pr",-(m>60?2:1));S.lastErr=msg;toast("Ошибка: −"+fm(m)+" и потеря времени");say("A",msg)}
+function pickCause(j){const c=S.cur,x=INC[c.i];if(x.c[j][1]){c.ph=2;say("A","Верно, причина установлена. Теперь действие.")}else{c.bad["c"+j]=1;fail("Эта версия не объясняет улики. Сверь IP, процессы и время событий.",40,2)}render()}
+function pickAct(j){const c=S.cur,x=INC[c.i];if(x.a[j][1])return finish();c.bad["a"+j]=1;fail(x.a[j][2],80*(x.d+1),3);render()}
+function finish(){const c=S.cur,x=INC[c.i],s=stats(),rp=S.rn[c.i]?Math.max(.25,.6-.1*S.rn[c.i]):1,b=lvl();
+ const over=Math.max(0,c.tm-TB[x.d]),rw=Math.round(RW[x.d]*(1+.06*catLv(x.cat))*rp*(1+S.pr/250)*(1-Math.min(.5,.1*over))*(1-.1*Math.min(c.er,3))*(s.fa==0?1.1:1)),xp=Math.round(XPR[x.d]*rp);
+ fin(rw,"зарплата и премия");fin(-120,"личные расходы");rpu("pr",2+(s.fa==0&&c.er==0?1:0));S.rn[c.i]=(S.rn[c.i]||0)+1;S.done[c.i]=1;S.inc++;addXP(xp);pop("+"+fm(rw));save();
+ const cd=x.l;mdl(`<h3>Инцидент закрыт</h3><p>Зарплата и премия: <b class="g">${fm(rw)}</b> · личные расходы −$120 · XP +${xp} · время ${c.tm}/${TB[x.d]} · ошибок ${c.er}</p><div class="note"><h4 class="cy" style="margin-bottom:6px">Учебная карточка</h4>${cd.map((t,i)=>`<p><b>${LB[i]}:</b> ${t}</p>`).join("")}</div><button class="pr" onclick="after()">Продолжить</button>`);
+ say(x.by,pick(CH[x.by].q));S.cur=null}
+function after(){closeM();if(S.ch==1&&S.money>=10000)return toCh2();render()}
+function toCh2(){$("tr").innerHTML=`<div class="in"><h1>Поздравляем!</h1><p>Ты основал собственную компанию информационной безопасности — <b class="g">QALQAN CYBER</b>.</p><p class="m">Арман: «Ты вырос из SOC. Теперь отвечаешь за людей, деньги и репутацию. Регистрация и оборудование: −$2,000.»</p><button class="pr" onclick="startCh2()">Войти в кабинет CEO</button></div>`;$("tr").classList.add("on")}
+function startCh2(){$("tr").classList.remove("on");S.ch=2;view="dash";S.br=Math.round(S.pr*.4);S.sat=60;S.rev=0;S.exp=0;fin(-2000,"регистрация и оборудование");S.cands=[gen(),gen(),gen()];S.hist=[{d:0,b:S.money}];loop();save();render()}
+// ===== ГЛАВА 2 =====
+const gen=()=>({id:S.nid++,n:pick(FN),sp:pick(Object.keys(SP)),lv:Math.random()<.3+.15*S.of.tc+S.br/300?2:1,exp:0,busy:0,pr:0,fa:0,jo:70,tr:0});
+const sal=e=>Math.round(SP[e.sp][1]*(1+.25*(e.lv-1)));
+const cap=()=>OF[S.of.tier][2]+S.cap+(S.of.alm?4:0)+(S.of.ast?5:0)+(S.of.intl?6:0);
+const dExp=()=>S.staff.reduce((s,e)=>s+sal(e)/30,0)+OF[S.of.tier][3]+UP.reduce((s,u)=>s+(S.of[u[0]]?u[3]:0),0);
+const spd=p=>{const st=p.st.map(i=>S.staff.find(e=>e.id==i)).filter(Boolean);if(!st.length)return .45;const roles={N:["NET","SOC"],S:["PEN","ARC"],O:["SOC","IR","PM"],C:["CLD","ARC"]}[CT[p.c].cat]||[];const fit=st.reduce((a,e)=>a+(roles.includes(e.sp)?1.08:.88),0)/st.length;const skill=st.reduce((a,e)=>a+(.76+.12*e.lv)*(1-e.fa/180),0)/st.length;return Math.max(.4,Math.min(1.9,skill*fit*(1+.04*catLv(CT[p.c].cat))*(1+.10*S.of.siem+.06*S.of.srv)))};
+function loop(){clearInterval(T);T=setInterval(day,5000/S.speed)}
+function setSpeed(n){S.speed=n;loop();render()}
+function day(){if(S.ch<2||S.over||$("ov").classList.contains("on")||$("tr").classList.contains("on")||$("intro").classList.contains("on"))return;
+ S.day++;const ex=dExp();fin(-ex,"расходы дня");
+ S.staff.forEach(e=>{if(e.busy>0&&--e.busy==0&&e.tr){e.tr=0;e.lv=Math.min(5,e.lv+1);e.jo=Math.min(100,e.jo+10);toast(e.n+" повысил квалификацию до ур."+e.lv)}if(e.pr)e.fa=Math.min(100,e.fa+3);else e.fa=Math.max(0,e.fa-6);e.jo=cl(e.jo+(e.pr?(e.fa>70?-2:0):1),0,100)});
+ const qt=S.staff.find(e=>e.jo<=15&&Math.random()<.15);if(qt){S.staff.splice(S.staff.indexOf(qt),1);S.proj.forEach(p=>{if(p.st.includes(qt.id)){p.st=p.st.filter(i=>i!=qt.id);p.q-=6}});toast(qt.n+" уволился из-за выгорания")}
+ S.proj.forEach(p=>{p.dl--;if(!p.w){p.left-=spd(p);if(p.left<=0){p.w=1;toast("Нужно решение по проекту «"+CT[p.c].n+"»");view="ctr"}}});
+ S.hist.push({d:S.day,b:S.money});if(S.hist.length>90)S.hist.shift();S.max=Math.max(S.max,S.money);
+ if(S.day%9==0&&Math.random()<.7){const i=pick(EV.map((e,k)=>k).filter(k=>EV[k][3](S)));mdl(`<div class="who"><div>${av(CH.R.h)}</div><div><h3 style="margin:0">${EV[i][0]}</h3><div class="m" style="margin:0">Событие</div></div></div><p style="margin-top:10px">${EV[i][1]}</p>`+EV[i][2].map((o,j)=>`<button class="op" onclick="ev(${i},${j})">${o[0]}</button>`).join(""))}
+ if(S.money>=0)S.warn=0;if(S.money<-8000){S.over=1;mdl(`<h3>Банкротство</h3><p>Долги слишком велики. Начни заново и следи за зарплатами.</p><button class="pr" onclick="newGame(1)">Новая игра</button>`)}else if(S.money<-1500&&!S.warn){S.warn=1;view="off";mdl(`<h3>Кризис ликвидности</h3><p>Баланс ${fm(S.money)}. Варианты на экране «Улучшения»: кредит $6,000, фриланс-заказ (при балансе ниже $1,500) или увольнение части команды.</p><button class="pr" onclick="closeM()">Понятно</button>`)}
+ if(S.day%5==0)save();render()}
+function ev(i,j){const f=EV[i][2][j][1],sc=1+Math.min(S.staff.length,15)/5;if(f.m)fin(Math.round(f.m*sc),"событие");if(f.r)rpu("br",f.r);if(f.s){rpu("sat",f.s);Object.values(S.clientData||{}).forEach(c=>c.trust=cl((c.trust||60)+f.s,0,100))}if(f.fa)S.staff.forEach(e=>e.fa=Math.min(100,e.fa+f.fa));if(f.cool)S.staff.forEach(e=>e.jo=cl(e.jo+f.cool,0,100));if(f.sick){const x=S.staff.filter(e=>!e.pr&&!e.busy);if(x.length){const w=pick(x);w.busy=6;toast(w.n+" заболел на 6 дней")}}if(f.tx)S.taxx+=f.tx;if(f.cap)S.cap+=f.cap;
+ if(f.lose){const x=S.staff.filter(e=>!e.pr);if(x.length)S.staff.splice(S.staff.indexOf(x.sort((a,b)=>a.jo-b.jo)[0]),1);else fin(-2000,"потери")}
+ closeM();toast(f.m?"Баланс: "+(f.m>0?"+":"")+fm(f.m*sc):"Решение принято");save();render()}
+function hire(i){const e=S.cands[i],fee=sal(e)/2;if(S.staff.length>=cap())return toast("Нет мест в офисе");if(S.money<fee)return toast("Недостаточно средств");fin(-fee,"найм");S.staff.push(e);S.cands.splice(i,1,gen());S.hired++;pop("−"+fm(fee));save();render()}
+function refresh(){if(S.money<300)return;fin(-300,"резюме");S.cands=[gen(),gen(),gen()];render()}
+function fire(i){if(S.staff[i].pr)return;S.staff.splice(i,1);render()}
+function train(i){const e=S.staff[i],c=Math.round(900*e.lv*(S.of.tc?.6:1));if(e.pr||e.busy||e.lv>=5||S.money<c)return toast("Обучение недоступно");fin(-c,"обучение");e.busy=S.of.tc?2:4;e.tr=1;render()}
+function startCon(i){const c=CT[i];if(S.proj.some(p=>p.c==i))return toast("Проект уже в работе");if(c.ox&&!S.of[c.ox])return toast("Нужен международный офис");if(S.br<c.mr)return toast("Нужна деловая репутация "+c.mr);if(S.day<(S.cd[i]||0))return toast("Клиент пока занят");
+ const cs=Math.round(c.pay*.08);if(S.money<cs)return toast("Нужно "+fm(cs)+" на расходы проекта");const ps=[];
+ for(const[k,n]of Object.entries(c.need)){const f=S.staff.filter(e=>e.sp==k&&!e.pr&&!e.busy&&e.fa<=85).sort((a,b)=>(b.lv*20-b.fa)-(a.lv*20-a.fa)).slice(0,n);if(f.length<n)return toast("Не хватает свободных: "+SP[k][0]);ps.push(...f)}
+ const adv=Math.round(price(i)*.3);fin(-cs,"расходы проекта");fin(adv,"аванс");ps.forEach(e=>e.pr=1);S.proj.push({c:i,s:0,left:c.days/3,dl:Math.ceil(c.days*1.3),q:55,st:ps.map(e=>e.id),w:0,adv});S.cl[c.cl]=1;toast("Проект запущен, аванс "+fm(adv));save();render()}
+function decide(pi,oi){const p=S.proj[pi];if(!p||!p.w)return;const c=CT[p.c],o=DEC[p.s].o[oi],cost=Math.round(c.pay*o[3]);if(S.money<cost)return toast("Недостаточно средств");if(cost)fin(-cost,"инструменты");p.q+=o[1];
+ if(o[4]&&Math.random()*100<c.risk*(S.of.ti?.5:1)*2){p.q-=10;rpu("sat",-6);rpu("br",-2);toast("Инцидент у клиента! Качество и репутация упали")}
+ p.dl-=o[2];p.w=0;if(p.s==2)return done(pi);p.s++;p.left=Math.max(1,c.days/3+o[2]);save();render()}
+function done(pi){const p=S.proj[pi],c=CT[p.c],st=p.st.map(i=>S.staff.find(e=>e.id==i)).filter(Boolean),late=p.dl<0,n=Math.max(1,st.length),av2=st.reduce((s,e)=>s+e.lv,0)/n,fa=st.reduce((s,e)=>s+e.fa,0)/n;
+ const Q=p.q+2*av2+2*catLv(c.cat)+6*S.of.edr+3*S.of.srv+2*xt(p)-fa/20,pay=Math.round(price(p.c)*cl(Q/80,.4,1.25)*(late?.8:1)),tax=Math.round(pay*(.15+S.taxx));
+ S.proj.splice(pi,1);fin(pay-p.adv,"оплата контракта");fin(-tax,"налоги");
+ if(S.debt){const w=Math.min(S.debt,Math.max(0,Math.round((pay-p.adv-tax)*.5)));if(w){fin(-w,"погашение кредита");S.debt-=w}}
+ S.rc[p.c]=(S.rc[p.c]||0)+1;S.cd[p.c]=S.day+Math.round(c.days/2)+8;S.con++;
+ st.forEach(e=>{e.pr=0;e.exp++;if(late)e.jo=cl(e.jo-8,0,100);if(e.exp>=4*e.lv&&e.lv<5){e.lv++;e.jo=Math.min(100,e.jo+10);toast(e.n+" получил повышение (ур."+e.lv+")")}});
+ const br=(Q>=85?4:Q>=65?2:-3)+(late?-3:0),sd=cl(Math.round((Q-c.qe)/3),-12,10)+(late?-6:0);rpu("br",br);rpu("sat",sd);rpu("pr",Q>=85?1:0);addXP(60+30*c.d);pop("+"+fm(pay-p.adv-tax));save();
+ mdl(`<h3>Контракт завершён</h3><p>${c.n} — ${c.cl}</p><div class="note"><p><b>Качество:</b> ${Math.round(Q)} (ожидал клиент: ${c.qe})${late?" · просрочка":""}</p><p><b>Оплата:</b> ${fm(pay)} (аванс ${fm(p.adv)} уже получен) · налог ${fm(tax)}</p><p><b>Деловая репутация:</b> ${br>0?"+":""}${br} · <b>Клиенты:</b> ${sd>0?"+":""}${sd}</p></div><button class="pr" onclick="closeM();render()">Отлично</button>`);render()}
+function reinforce(pi){const p=S.proj[pi],f=S.staff.filter(e=>!e.pr&&!e.busy&&e.fa<=60).sort((a,b)=>b.lv-a.lv)[0];if(!f)return toast("Нет свободных сотрудников");f.pr=1;p.st.push(f.id);render()}
+function bonus(i){const e=S.staff[i],c=Math.round(sal(e)*.3);if(S.money<c)return toast("Недостаточно средств");fin(-c,"премия");e.jo=Math.min(100,e.jo+25);e.fa=Math.max(0,e.fa-20);render()}
+function gig(){if(S.money>=1500||S.day<S.gcd)return toast("Фриланс недоступен сейчас");const f=S.staff.filter(e=>!e.pr&&!e.busy).sort((a,b)=>b.lv-a.lv)[0];let g=350;if(f){f.busy=3;g=500+250*f.lv}fin(g,"фриланс-заказ");S.gcd=S.day+4;toast("Фриланс: +"+fm(g));render()}
+function loan(){if(S.debt)return toast("Сначала погаси текущий кредит");fin(6000,"кредит");S.debt=7200;toast("Кредит $6,000, к возврату $7,200");render()}
+function repay(){const d=Math.min(S.debt,Math.max(0,S.money));if(d<=0)return;fin(-d,"погашение кредита");S.debt-=d;render()}
+function buyOf(){const n=OF[S.of.tier+1];if(!n||S.money<n[1])return;fin(-n[1],"офис");S.of.tier++;save();render()}
+function buyUp(k){const u=UP.find(x=>x[0]==k);if(!ucan(k))return;fin(-u[2],"платформа");S.of[k]=1;save();render()}
+function buySk(id){if(pts()<1||(S.sk[id]||0)>=3)return;S.sk[id]=(S.sk[id]||0)+1;S.spent++;save();render()}
+// ===== МЕНЮ/СОХРАНЕНИЕ =====
+function menu(){mdl(`<h3>Settings / About</h3><button class="op pr" onclick="save();toast('Сохранено');closeM()">Сохранить сейчас</button><button class="op" onclick="expJ()">Экспорт сохранения (JSON)</button><button class="op" onclick="togIntro()">Intro Animation: ${SET.intro?"ON":"OFF"}</button><div class="m">Импорт: выбери файл или вставь JSON</div><input type="file" accept=".json" onchange="rdF(this)"><textarea id="imp"></textarea><button class="op" onclick="impJ()">Загрузить из JSON</button><button class="op" onclick="newGame()">Новая игра</button><div class="note"><p><b>QALQAN</b> — Cybersecurity Simulator</p><p>VERSION 2.0.0 — BETA</p><p>QALQAN © 2026 · MADE BY ABDUALI</p></div><button class="op" onclick="closeM()">Закрыть</button>`)}
+const SET=(()=>{try{return Object.assign({intro:1},JSON.parse(localStorage.getItem("qalqan_set")))}catch(e){return{intro:1}}})();
+function togIntro(){SET.intro=SET.intro?0:1;try{localStorage.setItem("qalqan_set",JSON.stringify(SET))}catch(e){}menu()}
+function typeTo(id,t,ms){const el=$(id);let i=0;const h=setInterval(()=>{el.textContent=t.slice(0,++i);if(i>=t.length)clearInterval(h)},ms)}
+function introEnd(){const o=$("intro");if(!o.classList.contains("on"))return;o.classList.add("out");setTimeout(()=>o.classList.remove("on","out"),700);try{localStorage.setItem("qalqan_seen","1")}catch(e){}}
+function introRun(){if(!SET.intro)return;const o=$("intro");o.classList.add("on");const rm=matchMedia("(prefers-reduced-motion: reduce)").matches;let seen=0;try{seen=localStorage.getItem("qalqan_seen")}catch(e){}
+ const D=rm?400:seen?2200:3800,A="CYBERSECURITY SIMULATOR",B="SYSTEM INITIALIZED";
+ if(rm){$("itx").textContent=A;$("ist").textContent=B}else{typeTo("itx",A,seen?30:50);typeTo("ist",B,45)}
+ const t0=performance.now();(function f(t){const p=Math.min(1,Math.max(0,(t-t0)/D));$("ibar").style.width=p*100+"%";$("ipc").textContent=Math.round(p*100)+"%";if(p<1)requestAnimationFrame(f);else $("istart").classList.add("show")})(t0)}
+function expJ(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:"application/json"}));a.download="qalqan-save.json";a.click()}
+function rdF(i){const f=i.files[0];if(f){const r=new FileReader();r.onload=()=>$("imp").value=r.result;r.readAsText(f)}}
+function impJ(){try{const o=JSON.parse($("imp").value);if(!o||!o.ch||typeof o.money!="number")throw 0;S=Object.assign(fresh(),o);save();closeM();if(S.ch==2)loop();render();toast("Сохранение загружено")}catch(e){toast("Неверный файл сохранения")}}
+function newGame(f){if(!f&&!confirm("Начать заново? Весь прогресс будет потерян."))return;clearInterval(T);S=fresh();save();closeM();view="work";intro();render()}
+function intro(){if(S.story)return;mdl(`<h3>Смена начинается</h3><div class="who"><div>${av(CH.R.h)}</div><p><b>Арман:</b> Добро пожаловать в SOC, стажёр. Клиенты платят за спокойный сон, так что работай чисто.</p></div><div class="who"><div>${av(CH.A.h)}</div><p><b>Айдар:</b> Я помогу. Собирай улики, ставь диагноз, потом действуй. Цель: накопить $10,000 и открыть свою компанию.</p></div><button class="pr" onclick="S.story=1;closeM();save();chat()">Начать</button>`)}
+// ===== ЭКРАНЫ =====
+function hud(){const g=S.ch==1;$("hud").innerHTML=`<h1>${SHIELD}QALQAN<span class="beta">BETA</span><span class="ver">VERSION 2.0.0</span><span class="ch">${g?"CHAPTER 1 — SOC":"CHAPTER 2 — CEO"}</span></h1>
+<div class="st"><b>${title()}</b><span>ур.${lvl()} · XP ${S.xp}</span></div>
+<div class="st"><b>${fm(S.money)}</b><span>баланс${g?" / $10,000":""}</span></div><div class="st"><b>${Math.round(S.pr)}</b><span>проф. репутация</span></div>${g?"":`<div class="st"><b>${Math.round(S.br)}</b><span>деловая</span></div><div class="st"><b>${Math.round(S.sat)}</b><span>клиенты</span></div>`}
+${g?`<div class="bar" style="flex-basis:100%"><i style="width:${Math.min(100,S.money/100)}%"></i></div>`:`<div class="st"><b>День ${S.day}</b><span>расходы ${fm(dExp())}/день</span></div><div class="row" style="gap:4px">${[1,2,4].map(n=>`<button class="${S.speed==n?"on":""}" onclick="setSpeed(${n})">×${n}</button>`).join("")}</div>`}
+<button onclick="chat()">CHAT</button><button onclick="menu()">SETTINGS</button>`}
+function nav(){const V=S.ch==2?[["dash","Офис"],["team","Команда"],["ctr","Контракты"],["off","Улучшения"],["skills","Навыки"],["ach","Достижения"],["con","Контакты"]]:[["work","Рабочее место"],["skills","Навыки"],["ach","Достижения"],["con","Контакты"]];
+ if(!V.some(x=>x[0]==view))view=V[0][0];$("nav").innerHTML=V.map(x=>`<button class="${view==x[0]?"on":""}" onclick="view='${x[0]}';render()">${x[1]}</button>`).join("")}
+let lastV=null;
+function render(){hud();nav();if(view!=lastV){lastV=view;const mn=$("main");mn.classList.remove("pt");void mn.offsetWidth;mn.classList.add("pt")}$("main").innerHTML=({work:vWork,skills:vSk,ach:vAch,con:vCon,dash:vDash,team:vTeam,ctr:vCtr,off:vOff})[view]();chk()}
+function vWork(){const c=S.cur;let h='<div class="grid2"><div><div class="box"><h2>Очередь алертов</h2>';
+ INC.forEach((x,i)=>{const nl=NEED[x.d],lock=lvl()<nl||S.pr<NP[x.d];h+=`<div class="card ${c&&c.i==i?"sel":""}"><div class="row"><h3>${x.t}</h3><span class="bd d${x.d}">${DN[x.d]}</span></div><p>${S.done[i]?"Решено · повтор: "+Math.round(Math.max(.25,.6-.1*(S.rn[i]||1))*100)+"% награды":lock?"Закрыто · нужен уровень "+nl+(NP[x.d]?" и проф. репутация "+NP[x.d]:""):"Награда ≈ "+fm(RW[x.d])}</p><button ${lock?"disabled":""} onclick="openInc(${i})">${c&&c.i==i?"Открыто":"Взять в работу"}</button></div>`});
+ h+='</div></div><div class="box">'+(c?incV():"<h2>Рабочее место SOC</h2><p class='m'>Выбери алерт. Навыки дают бонус к награде и открывают подсказки; ошибки стоят денег, репутации и времени.</p>")+"</div></div>";return h}
+function incV(){const c=S.cur,x=INC[c.i],s=stats();let h=`<h2>${x.t}</h2><div class="row"><span class="bd d${x.d}">${DN[x.d]}</span><span>Время ${c.tm}/${TB[x.d]} мин</span><span>Ошибок: ${c.er}</span><span class="m">Подозрительное: ${s.ok}/${s.need}</span></div>`;
+ h+='<div class="tabs">'+Object.keys(evOf(x)).map(t=>`<button class="${c.t==t?"on":""}" onclick="openTab('${t}')">${t}${c.op[t]?"":" •"}</button>`).join("")+"</div>";
+ if(c.t){let first=1;h+=evOf(x)[c.t].map((t,j)=>{const f=t[0]=="!",st=catLv(x.cat)>=1&&f&&first;if(f)first=0;return`<div class="ev ${c.mk[c.t+"|"+j]?"mk":""}" onclick="mark('${c.t}',${j})">${st?"◆ ":""}${f?t.slice(1):t}</div>`}).join("")}else h+="<p class='m'>Открой источник данных. Нажимай на подозрительные записи, чтобы отметить их.</p>";
+ if(c.ph==0)h+=`<button class="pr" ${s.ok<s.need?"disabled":""} onclick="toDecide()">К решению (${s.ok}/${s.need})</button>`;
+ if(c.ph==1)h+="<h2 style='margin-top:12px'>Какова причина?</h2>"+x.c.map((o,j)=>`<button class="op" ${c.bad["c"+j]?"disabled":""} onclick="pickCause(${j})">${o[0]}</button>`).join("");
+ if(c.ph==2)h+="<h2 style='margin-top:12px'>Защитное действие</h2>"+x.a.map((o,j)=>`<button class="op" ${c.bad["a"+j]?"disabled":""} onclick="pickAct(${j})">${o[0]}</button>`).join("");return h}
+function vSk(){let h=`<div class="box"><h2>Дерево навыков · свободных очков: ${pts()}</h2><p class="m">Ур.1 даёт подсказку-маркер ◆ в уликах, ур.2 в категории делает открытие источников бесплатным. +6% награды за инциденты и +4% скорости, +2 качества в контрактах за каждый уровень.</p></div><div class="g3">`;
+ for(const k in CN)h+=`<div class="box"><h2>${CN[k]} (${catLv(k)})</h2>`+SK.filter(s=>s[1]==k).map(s=>{const l=S.sk[s[0]]||0;return`<div class="row" style="margin-bottom:8px"><span>${s[2]}<br>${[0,1,2].map(i=>`<span class="pip ${i<l?"f":""}"></span>`).join("")}</span><button ${pts()<1||l>=3?"disabled":""} onclick="buySk('${s[0]}')">+</button></div>`}).join("")+"</div>";return h+"</div>"}
+function vAch(){return'<div class="g3">'+AC.map(a=>`<div class="box" style="opacity:${S.ach[a[0]]?1:.45}"><h2>${S.ach[a[0]]?"✓":"—"} ${a[1]}</h2><p class="m">${a[2]}</p></div>`).join("")+"</div>"}
+function vCon(){return'<div class="g3">'+Object.values(CH).map(c=>`<div class="box"><div class="who">${av(c.h,56)}<div><h2 style="margin:0">${c.n}</h2><div class="m" style="margin:0">${c.r}</div></div></div><p class="m" style="margin-top:8px">Специализация: ${c.s}<br>Характер: ${c.c}</p>${c.n=="Айдар"?'<button onclick="chat()">Написать</button>':""}</div>`).join("")+"</div>"}
+function chart(){const a=S.hist.slice(-60);if(a.length<2)return"<p class='m'>График появится через пару дней.</p>";const lo=Math.min(...a.map(x=>x.b)),hi=Math.max(...a.map(x=>x.b)),r=hi-lo||1;
+ const pts=a.map((x,i)=>(i/(a.length-1)*600).toFixed(1)+","+(130-(x.b-lo)/r*120).toFixed(1)).join(" ");return`<svg class="chart" viewBox="0 0 600 140"><polygon points="0,140 ${pts} 600,140" fill="rgba(255,255,255,.08)"/><polyline points="${pts}" fill="none" stroke="#fff" stroke-width="2"/></svg><div class="row m"><span>мин ${fm(lo)}</span><span>макс ${fm(hi)}</span></div>`}
+function vDash(){const busy=S.proj.length;return`<div class="g3"><div class="box"><h2>Финансы</h2><p>Баланс: <b class="g">${fm(S.money)}</b><br>Расходы/день: ${fm(dExp())}<br>Выручка всего: ${fm(S.rev)}<br>Расходы и налоги: ${fm(S.exp)}</p></div><div class="box"><h2>Компания</h2><p>Проф.: ${Math.round(S.pr)} · деловая: ${Math.round(S.br)} · клиенты: ${Math.round(S.sat)}<br>Долг: ${fm(S.debt)}<br>Клиентов: ${Object.keys(S.cl).length}<br>Сотрудников: ${S.staff.length}/${cap()}<br>Активных проектов: ${busy}<br>Завершено контрактов: ${S.con}</p></div></div><div class="box"><h2>График баланса (60 дней)</h2>${chart()}</div>`+gbox()+(busy?`<div class="box"><h2>Проекты</h2>${projs()}</div>`:"")}
+function projs(){return S.proj.map((p,i)=>{const c=CT[p.c];let h=`<div class="card"><div class="row"><h3>${c.n}</h3><span class="m">${c.cl}</span></div><p>${DEC[p.s].q} · до дедлайна ${p.dl} дн.${p.dl<0?" ! просрочка":""}</p><div class="pb"><i style="width:${p.w?100:Math.max(0,100-p.left/(c.days/3)*100)}%"></i></div>`;
+ if(p.w)h+=DEC[p.s].o.map((o,j)=>`<button class="op" onclick="decide(${i},${j})">${o[0]}${o[3]?" (−"+fm(c.pay*o[3])+")":""}${o[4]?" !":""}</button>`).join("");return h+`<button onclick="reinforce(${i})">+ Усилить команду (${xt(p)})</button></div>`}).join("")}
+function stars(e){return"★".repeat(Math.min(5,e.lv))+"☆".repeat(5-Math.min(5,e.lv))}
+function ecard(e,btn){return`<div class="card"><div class="who">${av(hue(e.n))}<div><h3>${e.n}</h3><div class="m" style="margin:0">${SP[e.sp][0]}</div></div></div><p>${stars(e)} · зарплата ${fm(sal(e))}/мес · производительность ${(.8+.15*e.lv).toFixed(2)} · опыт ${e.exp}/${4*e.lv} · усталость ${e.fa}% · удовл. ${e.jo}%${e.busy?" · недоступен "+e.busy+" дн.":""}${e.pr?" · на проекте":""}</p>${btn}</div>`}
+function vTeam(){return`<div class="grid2"><div class="box"><h2>Команда ${S.staff.length}/${cap()}</h2>${S.staff.map((e,i)=>ecard(e,`<div class="row"><button ${e.pr||e.busy||e.lv>=5?"disabled":""} onclick="train(${i})">Обучить (${fm(900*e.lv*(S.of.tc?.6:1))})</button><button onclick="bonus(${i})">Премия ($${Math.round(sal(e)*.3)})</button><button ${e.pr?"disabled":""} onclick="fire(${i})">Уволить</button></div>`)).join("")||"<p class='m'>Пока никого. Найми первого сотрудника.</p>"}</div><div class="box"><h2>Резюме кандидатов</h2>${S.cands.map((e,i)=>ecard(e,`<button class="pr" onclick="hire(${i})">Нанять (${fm(sal(e)/2)})</button>`)).join("")}<button onclick="refresh()">Обновить список (−$300)</button></div></div>`}
+function vCtr(){let h=S.proj.length?`<div class="box"><h2>Активные проекты</h2>${projs()}</div>`:"";
+ return h+'<div class="g3">'+CT.map((c,i)=>{const cd=Math.max(0,(S.cd[i]||0)-S.day),act=S.proj.some(p=>p.c==i),why=act?"В работе":(c.ox&&!S.of[c.ox])?"Нужен междунар. офис":S.br<c.mr?"Нужна деловая репутация "+c.mr:cd?"Пауза "+cd+" дн.":"";
+ return`<div class="card"><div class="row"><h3>${c.n}</h3><span class="bd d${c.d}">${DN[c.d]}</span></div><p>${c.cl} · ${c.k}${loyal(i)?" · постоянный клиент":""}<br>Выплата: <b class="g">${fm(price(i))}</b> · срок ${c.days} дн. · риск ${c.risk}% · ожидаемое качество ${c.qe}<br>Нужно: ${Object.entries(c.need).map(([k,n])=>n+"× "+SP[k][0]).join(", ")}</p><button class="pr" ${why?"disabled":""} onclick="startCon(${i})">${why||"Взять проект"}</button></div>`}).join("")+"</div>"}
+function vOff(){const n=OF[S.of.tier+1];return fbox()+`<div class="box"><h2>Офис: ${OF[S.of.tier][0]}</h2><p class="m">Мест: ${cap()} · содержание ${fm(OF[S.of.tier][3])}/день</p>${n?`<button class="pr" ${S.money<n[1]?"disabled":""} onclick="buyOf()">Улучшить: ${n[0]} (${fm(n[1])}, мест ${n[2]}, ${fm(n[3])}/день)</button>`:"<p class='g'>Максимальный уровень офиса</p>"}</div><div class="g3">`+UP.map(u=>`<div class="card"><h3>${u[1]}</h3><p>${u[4]}<br>Содержание ${fm(u[3])}/день</p><button class="pr" ${ucan(u[0])?"":"disabled"} onclick="buyUp('${u[0]}')">${S.of[u[0]]?"Установлено":"Купить "+fm(u[2])}</button></div>`).join("")+"</div>"}
+// ===== QALQAN SYSTEMS OVERHAUL v3 =====
+// Career, economy, contracts and company systems share one validated state.
+LV.splice(0,LV.length,0,60,130,220,330,460,600,760,940,1150);
+RW.splice(0,RW.length,850,1250,1800);
+NEED.splice(0,NEED.length,1,2,5);
+NP.splice(0,NP.length,0,4,12);
+
+// Additional defensive SOC cases. These extend the original evidence chains.
+INC.push(
+ {t:"ALERT #1101 — MFA-подтверждения без запроса",d:1,by:"A",cat:"O",ch:[0,"Письмо бухгалтера",["!Учётная запись получила серию push-запросов MFA вскоре после фишингового письма","!Пользователь подтвердил один запрос, которого сам не создавал"]],ev:{"IAM-журнал":["!37 push-запросов MFA за 6 минут","!Успешный вход с нового устройства после подтверждения","Обычный вход сотрудника вчера — известное устройство"],"Почта":["!Пароль сброшен через внешнюю форму","Нет обращения в Service Desk"]},c:[["Компрометация учётной записи через MFA fatigue",1],["Плановая синхронизация каталога",0],["Сбой мобильного приложения",0]],a:[["Отозвать сессии и токены, сбросить пароль, проверить устройства и включить устойчивую MFA",1],["Отключить MFA для всех сотрудников",0,"Это расширит последствия компрометации."],["Удалить пользователя из каталога",0,"Уничтожит рабочий доступ, но не закроет активные сессии."],["Игнорировать: MFA же сработала",0,"Подтверждение было получено обманом."]],l:["Злоумышленник добился подтверждения входа серией push-запросов.","MFA fatigue / account takeover","Серия запросов и новое устройство в IAM-журнале.","Отозвать сессии, сменить учётные данные и проверить устройство.","IAM, MFA, журнал входов, управление сессиями.","MFA помогает, но пользователь должен подтверждать только знакомый запрос."]},
+ {t:"ALERT #1110 — Сервисная учётная запись с лишними правами",d:1,by:"T",cat:"C",ch:[2,"Серверный майнер",["!Сервисная учётная запись deploy использовалась на нескольких системах","!Права deploy шире, чем требуется для обновления приложения"]],ev:{"IAM-аудит":["!deploy имеет Global Administrator","deploy запускает только один сервис","Последняя ротация секрета — 14 месяцев назад"],"Журналы доступа":["!Вход deploy с рабочего места, где учётная запись не используется","Изменения конфигурации начались после входа"]},c:[["Нарушение принципа наименьших привилегий и компрометация сервисной учётной записи",1],["Плановая ротация ключей",0],["Ошибка мониторинга",0]],a:[["Ограничить роль до нужного сервиса, ротировать секрет, проверить следы доступа и владельца",1],["Выдать deploy ещё больше прав",0,"Дополнительные права увеличат потенциальный ущерб."],["Удалить все сервисные аккаунты",0,"Сервисы остановятся, а причина не будет расследована."],["Отключить аудит IAM",0,"Ты потеряешь ключевые доказательства."]],l:["Сервисный аккаунт имел избыточные привилегии и использовался с непривычного устройства.","Privilege abuse / service account compromise","IAM-аудит и аномальное место входа.","Ограничить права, сменить секрет и проверить действия.","IAM, PAM, секреты, аудит привилегий.","У сервисного аккаунта должен быть владелец, срок ротации и минимальная роль."]},
+ {t:"ALERT #1122 — Резервная копия не восстанавливается",d:1,by:"A",cat:"S",ch:[7,"Шифровальщик в финотделе",["!В журнале есть успешные задания backup, но ни одного теста восстановления за 11 месяцев","!Последняя копия содержит уже повреждённые файлы"]],ev:{"Backup-журнал":["!Задание завершилось со статусом SUCCESS, размер копии — 0 байт","!Ключ шифрования недоступен после смены администратора","Последняя проверка восстановления — 11 месяцев назад"],"Хранилище":["!Копии доступны на том же домене, что и рабочие серверы","Есть изолированная недельная копия"]},c:[["Ошибка процесса резервного копирования и отсутствие тестов восстановления",1],["Нехватка CPU на сервере",0],["Сетевой DDoS",0]],a:[["Сохранить изолированную копию, восстановить в тестовой среде, исправить мониторинг и провести регулярные учения",1],["Удалить старые копии",0,"Ты лишишься возможных точек восстановления."],["Считать статус SUCCESS достаточным",0,"Успешное задание не гарантирует целостность и восстановление."],["Подключить все копии к рабочему домену",0,"Это повышает риск одновременной компрометации."]],l:["Резервное копирование формально выполнялось, но восстановить данные было нельзя.","Backup integrity / recovery failure","Размер копии, доступность ключей и отсутствие тестов.","Проверить изолированную копию и регулярно тестировать восстановление.","Backup monitoring, immutable storage, disaster recovery.","Проверка восстановления важнее зелёной галочки в расписании."]},
+ {t:"ALERT #1136 — Необычное OAuth-приложение",d:2,by:"T",cat:"C",ch:[4,"Публичный бакет клиентов",["!В корпоративном каталоге найдено приложение с доступом к файлам пользователей","!Разрешения выданы без согласования владельца данных"]],ev:{"OAuth-аудит":["!Приложение DocSync просит Mail.ReadWrite и Files.ReadWrite.All","!Согласие выдано обычным пользователем","Издатель не входит в список доверенных поставщиков"],"Cloud Audit":["!Приложение читало документы вне рабочего времени","Нет зарегистрированного бизнес-владельца"],"Service Desk":["Нет заявки на подключение интеграции"]},c:[["Несанкционированное OAuth-приложение с чрезмерными разрешениями",1],["Обновление браузера",0],["Сбой облачного хранилища",0]],a:[["Отозвать согласие и токены, заблокировать приложение, оценить доступ к данным и включить admin consent workflow",1],["Оставить приложение: пользователь уже согласился",0,"Согласие пользователя не заменяет проверку безопасности."],["Удалить всю корпоративную почту",0,"Это не ограничит OAuth-доступ к другим ресурсам."],["Разрешить всем приложениям запрашивать любые scopes",0,"Так ты увеличишь поверхность риска."]],l:["Пользователь согласовал приложение с чрезмерным доступом к корпоративным данным.","OAuth consent phishing / excessive permissions","OAuth audit, Cloud Audit и отсутствие заявки.","Отозвать токены, заблокировать приложение и ограничить выдачу согласий.","OAuth, IAM, SaaS Security Posture Management.","Проверяй издателя, владельца и каждый запрошенный scope."]},
+ {t:"ALERT #1140 — Сайт недоступен во время распродажи",d:1,by:"D",cat:"N",ch:[5,"Аномальная исходящая передача",["!Ранее уже наблюдался нетипичный трафик на пограничном узле","!Текущий инцидент затрагивает доступность, а не конфиденциальность"]],ev:{"Сетевой мониторинг":["!Входящий трафик вырос в 18 раз за 3 минуты","!Большинство запросов идёт к одному публичному endpoint","Здоровье базы данных — норма"],"CDN/WAF":["!Счётчик запросов от множества источников резко вырос","!Лимит соединений балансировщика исчерпан","Внутренние сервисы отвечают штатно"]},c:[["Распределённая перегрузка публичного сервиса (DDoS-подобный трафик)",1],["Отказ базы данных",0],["Плановая задача резервного копирования",0]],a:[["Включить согласованный upstream/CDN rate limiting, связаться с провайдером и сохранить телеметрию",1],["Отключить весь интернет компании",0,"Остановишь и легитимных клиентов."],["Увеличить лимиты без анализа источников",0,"Это может лишь отложить отказ."],["Удалить сетевые журналы",0,"Ты потеряешь данные для провайдера и расследования."]],l:["Публичный сервис перегрузил аномальный объём запросов.","Availability attack / traffic flood","Всплеск трафика, исчерпание лимита соединений и здоровая БД.","Использовать защиту на edge/CDN и согласовать фильтрацию с провайдером.","NDR, CDN, WAF, rate limiting, capacity monitoring.","Проверяй слой, который исчерпал ресурс, прежде чем менять инфраструктуру."]},
+ {t:"ALERT #1154 — Подозрительное обновление поставщика",d:2,by:"A",cat:"S",ch:[8,"Утечка базы пользователей",["!Поставщик обновлений имеет доступ к внутреннему контуру","!Время появления нового агента совпадает с необычными изменениями"]],ev:{"Endpoint-журнал":["!Новый агент появился сразу после обновления подрядчика","!Подпись пакета не совпадает с опубликованным отпечатком поставщика","Остальные обновления прошли штатно"],"Сеть":["!Агент установил соединение с неизвестным доменом","!Установка затронула серверы с чувствительными данными"],"Закупки":["Нет подтверждения контрольной суммы от поставщика"]},c:[["Компрометация цепочки поставки или нарушение процесса проверки обновлений",1],["Обычное плановое обновление",0],["Переполнение диска",0]],a:[["Приостановить распространение, изолировать затронутые узлы по плану, проверить подпись и связаться с поставщиком",1],["Продолжить обновление на всех серверах",0,"Это распространит непроверенный пакет."],["Удалить все журналы обновления",0,"Журналы необходимы для определения масштаба."],["Отключить резервное копирование",0,"Это ухудшит восстановление."]],l:["Непроверенное обновление поставщика распространилось на серверы с чувствительными данными.","Supply-chain risk / compromised update", "Несовпадение подписи, новый процесс и неизвестное соединение.","Остановить распространение, проверить артефакт и согласовать действия с поставщиком.","EDR, software inventory, code signing, vendor risk management.","Проверка подписи и поэтапное развёртывание — обязательная часть управления обновлениями."]}
+);
+
+const MISSION_REQ={3:[2],7:[0],8:[3],9:[0],10:[2],11:[7],12:[4],13:[5],14:[8]};
+const ROLECAT={N:["NET","SOC"],S:["PEN","ARC"],O:["SOC","IR","PM"],C:["CLD","ARC","PEN"]};
+
+function syncCompany(){
+ S.player=S.player||{cash:0,income:0,expenses:0};
+ S.personal=S.personal||{cash:0,income:0,expenses:0};
+ S.company=S.company||{name:"QALQAN CYBER",balance:0,revenue:0,expenses:0,capex:0,reputation:0,clientSatisfaction:60,employees:[],clients:{},contracts:[],capitalInvested:0};
+ S.clientData=S.clientData||{};
+ S.company.name=S.company.name||"QALQAN CYBER";
+ S.company.balance=S.ch===2?Math.round(S.money):0;
+ S.company.revenue=Math.round(S.rev||0);S.company.expenses=Math.round(S.exp||0);
+ S.company.reputation=Math.round(S.br||0);S.company.clientSatisfaction=Math.round(S.sat||0);
+ S.company.employees=(S.staff||[]).map(e=>({id:e.id,name:e.n,specialization:e.sp,level:e.lv,salary:sal(e),fatigue:e.fa,jobSatisfaction:e.jo,assigned:!!e.pr}));
+ S.company.clients=S.clientData;
+ S.company.contracts=(S.proj||[]).map(p=>({id:p.id,client:CT[p.c]?.cl||"",stage:p.s,deadline:p.dl,quality:p.q}));
+ S.player.cash=S.ch===1?Math.round(S.money):Math.round(S.personal.cash||0);
+ S.player.income=Math.round(S.personal.income||0);S.player.expenses=Math.round(S.personal.expenses||0);
+ S.player.level=lvl();S.player.careerStage=title();
+}
+function save(){try{syncCompany();S.schema=3;localStorage.setItem("qalqan2",JSON.stringify(S));return true}catch(e){return false}}
+function normalizeState(o){
+ const d=fresh();S=Object.assign(d,o||{});
+ S.of=Object.assign(d.of||{},o?.of||{});S.sk=Object.assign({},o?.sk||{});S.rc=Object.assign({},o?.rc||{});S.cd=Object.assign({},o?.cd||{});
+ S.clientData=Object.assign({},o?.clientData||{});S.eventCooldowns=Object.assign({},o?.eventCooldowns||{});
+ S.personal=Object.assign({cash:0,income:0,expenses:0},o?.personal||{});
+ S.player=Object.assign({cash:0,income:0,expenses:0},o?.player||{});
+ S.company=Object.assign({name:"QALQAN CYBER",balance:0,revenue:0,expenses:0,capex:0,reputation:0,clientSatisfaction:60,employees:[],clients:{},contracts:[],capitalInvested:0},o?.company||{});
+ S.contractSeq=Math.max(1,Number(S.contractSeq)||1);S.completedContracts=S.completedContracts||{};S.eventNext=Math.max(1,Number(S.eventNext)||9);
+ S.staff=Array.isArray(S.staff)?S.staff:[];S.cands=Array.isArray(S.cands)?S.cands:[];S.proj=Array.isArray(S.proj)?S.proj:[];
+ S.staff.forEach(e=>{e.fa=Number(e.fa)||0;e.jo=e.jo==null?70:Number(e.jo);e.tr=e.tr||0;e.busy=Number(e.busy)||0;e.exp=Number(e.exp)||0;e.pr=e.pr?1:0;e.notice=Number(e.notice)||0});
+ S.proj.forEach(p=>{p.id=p.id||S.contractSeq++;p.st=Array.isArray(p.st)?p.st:[];p.completed=!!p.completed;p.riskEvents=Number(p.riskEvents)||0;p.tools=Number(p.tools)||0;p.setup=Number(p.setup)||0;p.adv=Number(p.adv)||0});S.contractSeq=Math.max(S.contractSeq,...S.proj.map(p=>(Number(p.id)||0)+1),...Object.keys(S.completedContracts).map(k=>(Number(k)||0)+1));
+ S.payrollArrears=Math.max(0,Number(S.payrollArrears)||0);S.schema=3;S.speed=[1,2,4].includes(S.speed)?S.speed:1;S.eventCurrent=Number.isInteger(o?.eventCurrent)?o.eventCurrent:null;S.over=0;
+ if(S.ch===2&&S.cands.length===0&&S.staff.length===0)S.cands=[candidate("PEN"),candidate("SOC"),candidate("NET")];
+ syncCompany();return S;
+}
+function load(){try{const j=localStorage.getItem("qalqan2");if(j){const o=JSON.parse(j);if(o&&typeof o.money==="number"&&[1,2].includes(o.ch)){normalizeState(o);return 1}}}catch(e){}return 0}
+function candidate(sp){return{id:S.nid++,n:pick(FN),sp,lv:Math.random()<.18?2:1,exp:0,busy:0,pr:0,fa:0,jo:72,tr:0,notice:0}}
+function lvlTitle(){if(S.ch===1){const n=lvl();return n<=1?"Intern":n<=3?"Junior SOC Analyst":n<=5?"Middle Security Analyst":n<=7?"Senior Security Engineer":"Team Lead"}if(S.gl?.g9&&S.br>=90&&S.con>=15&&S.staff.length>=15)return"Cybersecurity Empire";if(S.staff.length>=4&&S.con>=3)return"CEO";return"Founder"}
+function salaryNow(){return S.ch===1?Math.round(650+lvl()*180):Math.round(1200+Math.min(1800,S.con*80)+S.br*5)}
+function fin(d,why,type){
+ d=Math.round(Number(d)||0);if(!d)return true;
+ const floor=S.ch===2?-8000:0;if(d<0&&S.money+d<floor)return false;
+ S.money+=d;
+ if(S.ch===1){if(d>0)S.personal.income=(S.personal.income||0)+d;else S.personal.expenses=(S.personal.expenses||0)-d;S.personal.cash=S.money}
+ else{
+  const kind=type||(d<0?"expense":"other");
+  if(kind==="expense")S.exp=(S.exp||0)-Math.min(0,d);
+  if(kind==="revenue")S.rev=(S.rev||0)+Math.max(0,d);
+  if(kind==="capex")S.company.capex=(S.company.capex||0)-Math.min(0,d);
+  if(kind==="capital")S.company.capitalInvested=(S.company.capitalInvested||0)+Math.max(0,d);
+ }
+ S.max=Math.max(S.max||0,S.money);
+ S.led=S.led||[];S.led.unshift([S.day||0,why||"Операция",d]);if(S.led.length>50)S.led.pop();
+ syncCompany();return true;
+}
+function roleRequirements(i){return Object.entries(CT[i].need).map(([k,n])=>`${n}× ${SP[k]?.[0]||k}`).join(", ")}
+function missionLocked(i){const x=INC[i],req=MISSION_REQ[i]||[];return lvl()<NEED[x.d]||S.pr<NP[x.d]||req.some(k=>!S.done[k])}
+function openInc(i){if(!INC[i])return;if(S.cur&&S.cur.i!==i)return toast("Сначала закрой текущее расследование");if(missionLocked(i))return toast("Расследование ещё не открыто: проверь уровень и предыдущие дела");S.cur={i,op:{},mk:{},ph:0,tm:0,er:0,bad:{},t:null,finished:false};save();render();say(INC[i].by,"Берём "+INC[i].t.split("—")[0]+". Начни с источников данных.");if(DISPLAY.mode==="mobile")$("chat").classList.add("hide");else chat()}
+function openTab(t){const c=S.cur;if(!c||c.ph!==0)return;if(!c.op[t]){c.op[t]=1;if(catLv(INC[c.i].cat)<2)c.tm++}c.t=t;save();render()}
+function mark(t,j){const c=S.cur;if(!c||c.ph!==0||!c.op[t])return;const k=t+"|"+j;c.mk[k]=!c.mk[k];save();render()}
+function stats(){const c=S.cur;if(!c)return{ok:0,fl:0,fa:0,need:0};const x=INC[c.i],ev=evOf(x);let ok=0,fl=0,fa=0;for(const t in ev)ev[t].forEach((s,j)=>{const f=s[0]==="!",m=!!c.mk[t+"|"+j];if(f)fl++;if(f&&m)ok++;if(!f&&m)fa++});return{ok,fl,fa,need:Math.min(RQ[x.d],fl)}}
+function toDecide(){const c=S.cur;if(!c||c.ph!==0)return;const s=stats();if(s.ok<s.need)return toast("Собери больше подозрительных улик");c.ph=INC[c.i].d?1:2;save();render();say("A","Улики собраны. Теперь решение.")}
+function fail(msg,m,t){const c=S.cur;if(!c)return;c.er++;c.tm+=t;const cost=Math.min(Math.max(0,S.money),m);if(cost)fin(-cost,"ошибка расследования","expense");rpu("pr",-(m>60?2:1));S.lastErr=msg;toast("Ошибка: −"+fm(cost)+" и потеря времени");say("A",msg);save()}
+function pickCause(j){const c=S.cur;if(!c||c.ph!==1)return;const x=INC[c.i];if(!x.c||!x.c[j])return;if(x.c[j][1]){c.ph=2;say("A","Верно, причина установлена. Теперь действие.")}else{c.bad["c"+j]=1;fail("Эта версия не объясняет улики. Сверь IP, процессы и время событий.",40,2)}save();render()}
+function pickAct(j){const c=S.cur;if(!c||c.ph!==2||c.finished)return;const x=INC[c.i];if(!x.a?.[j])return;if(x.a[j][1])return finish();c.bad["a"+j]=1;fail(x.a[j][2],80*(x.d+1),3);render()}
+function finish(){const c=S.cur;if(!c||c.finished)return;const x=INC[c.i],s=stats(),first=!S.done[c.i],over=Math.max(0,c.tm-TB[x.d]);c.finished=true;
+ let rw=0,xp=0;if(first){const accuracy=s.fa===0?1.10:Math.max(.78,1-.08*s.fa);const speed=cl(1-.025*over,.72,1);const quality=cl(1-.10*Math.min(c.er,3),.65,1);rw=Math.round(RW[x.d]*(1+S.pr/300+.06*catLv(x.cat))*accuracy*speed*quality);xp=XPR[x.d];fin(rw,"оплата SOC-инцидента","income");fin(-120,"личные расходы","expense");rpu("pr",2+(s.fa===0&&c.er===0?1:0));S.done[c.i]=1;S.inc=(S.inc||0)+1;addXP(xp)}
+ else{toast("Тренировка завершена: повторные выплаты и XP не начисляются")}
+ S.rn[c.i]=(S.rn[c.i]||0)+1;const cd=x.l||[];S.missionHistory=S.missionHistory||[];S.missionHistory.unshift({id:c.i,day:S.workDay||0,first,reward:rw,xp,errors:c.er,accuracy:s.ok+"/"+s.need});S.missionHistory=S.missionHistory.slice(0,30);S.workDay=(S.workDay||0)+1;S.cur=null;save();pop(first?"+"+fm(rw):"PRACTICE");
+ mdl(`<h3>${first?"Инцидент закрыт":"Тренировка завершена"}</h3><p>${first?`Оплата: <b class="g">${fm(rw)}</b> · личные расходы −$120 · XP +${xp}`:"Повторное прохождение не приносит деньги, XP или репутацию."} · время ${c.tm}/${TB[x.d]} · ошибок ${c.er} · ложных отметок ${s.fa}</p><div class="note"><h4 class="cy" style="margin-bottom:6px">Учебная карточка</h4>${cd.map((t,i)=>`<p><b>${LB[i]}:</b> ${t}</p>`).join("")}</div><button class="pr" onclick="after()">Продолжить</button>`);
+ say(x.by,pick(CH[x.by].q));claimGoals();save();
+}
+function after(){closeM();if(S.ch===1&&S.money>=10000&&lvl()>=8)return toCh2();render()}
+function toCh2(){if(S.ch!==1||S.money<10000||lvl()<8)return toast("Для основания QALQAN CYBER нужны $10,000 стартового капитала и уровень Team Lead");$("tr").innerHTML=`<div class="in"><h1>QALQAN CYBER</h1><p>Ты достиг уровня <b class="g">Team Lead</b> и накопил стартовый капитал.</p><p class="m">$10,000 переходят в компанию. Регистрация и запуск стоят $2,000. После открытия раздельно учитываются деньги владельца и деньги бизнеса.</p><button class="pr" onclick="startCh2()">Основать компанию</button></div>`;$("tr").classList.add("on")}
+function startCh2(){if(S.ch!==1||S.money<10000||lvl()<8)return;const personalRemainder=Math.max(0,S.money-10000);S.ch=2;S.personal.cash=personalRemainder;S.personal.income=S.personal.income||0;S.personal.expenses=S.personal.expenses||0;S.money=10000;S.br=Math.round(S.pr*.4);S.sat=60;S.rev=0;S.exp=0;S.company.capitalInvested=10000;S.company.name="QALQAN CYBER";S.cands=[candidate("PEN"),candidate("SOC"),candidate("NET")];S.hist=[{d:0,b:S.money}];S.day=0;S.eventNext=9;S.eventCooldowns={};S.gigMonth=0;S.gigCount=0;S.gcd=0;fin(-2000,"регистрация и оборудование","capex");view="dash";$("tr").classList.remove("on");loop();claimGoals();save();render()}
+function addXP(n){const before=lvl();S.xp+=Math.max(0,Math.round(n));if(lvl()>before){toast("Новый уровень: "+title()+" · +1 очко навыка");pop("LEVEL UP")}save()}
+function claimGoals(){if(S.ch!==2)return;GL.forEach(g=>{if(!S.gl[g[0]]&&g[3](S)){S.gl[g[0]]=1;fin(g[4],"награда за цель","other");toast("Цель выполнена: "+g[1]+" · бонус "+fm(g[4]));}});}
+function eventEligible(){return EV.map((e,i)=>i).filter(i=>typeof EV[i][3]==="function"&&EV[i][3](S)&&(S.eventCooldowns[i]||0)<=S.day)}
+function showEvent(i){const e=EV[i];if(!e)return;S.eventCurrent=i;mdl(`<div class="who"><div>${av(CH.R.h)}</div><div><h3 style="margin:0">${e[0]}</h3><div class="m" style="margin:0">Событие компании · День ${S.day}</div></div></div><p style="margin-top:10px">${e[1]}</p>${e[2].map((o,j)=>`<button class="op" ${o[1].m<0&&S.money<-o[1].m?"disabled":""} onclick="ev(${i},${j})">${o[0]}</button>`).join("")}`);save()}
+function restoreEventModal(){if(S.ch===2&&Number.isInteger(S.eventCurrent)&&EV[S.eventCurrent])showEvent(S.eventCurrent)}
+function loop(){clearInterval(T);T=setInterval(day,5000/S.speed)}
+function setSpeed(n){if(![1,2,4].includes(n))return;S.speed=n;loop();save();render()}
+function day(){if(S.ch!==2||S.over||$("ov").classList.contains("on")||$("tr").classList.contains("on")||$("intro").classList.contains("on"))return;
+ S.day++;const operating=dExp();const paid=fin(-operating,"операционные расходы дня","expense");if(!paid){S.missedPayroll=(S.missedPayroll||0)+1;S.payrollArrears=(S.payrollArrears||0)+operating;S.staff.forEach(e=>e.jo=cl(e.jo-1,0,100))}else{S.missedPayroll=0;if(S.payrollArrears>0&&S.money>0){const arrears=Math.min(S.payrollArrears,S.money);if(fin(-arrears,"погашение просроченных расходов","expense"))S.payrollArrears-=arrears}}
+ S.staff.forEach(e=>{if(e.busy>0){e.busy--;if(e.busy===0&&e.tr){e.tr=0;e.lv=Math.min(5,e.lv+1);e.jo=cl(e.jo+12,0,100);toast(e.n+" завершил обучение · уровень "+e.lv)}}if(e.pr){e.fa=cl(e.fa+1.5,0,100);if(e.fa>75)e.jo=cl(e.jo-.6,0,100)}else{e.fa=cl(e.fa-5,0,100);e.jo=cl(e.jo+.3,0,100)}if(e.notice>0)e.notice--});
+ const quit=S.staff.find(e=>e.jo<=8&&e.notice===0&&!e.pr);if(quit){S.staff.splice(S.staff.indexOf(quit),1);S.proj.forEach(p=>{if(p.st.includes(quit.id)){p.q-=7;p.st=p.st.filter(id=>id!==quit.id)}});toast(quit.n+" покинул компанию после предупреждения о выгорании")}
+ S.staff.forEach(e=>{if(e.jo<=18&&e.notice===0&&!e.pr){e.notice=5;toast(e.n+" недоволен условиями: 5 дней на улучшение ситуации")}});
+ S.proj.forEach(p=>{if(p.completed)return;p.dl--;if(!p.w){p.left-=spd(p);if(p.dl<0)p.late=1;if(p.left<=0){p.w=1;toast("Нужно решение по проекту «"+CT[p.c].n+"»");view="ctr"}}});
+ if(S.day%30===0){S.debt=Math.round((S.debt||0)*1.01);const draw=Math.min(salaryNow(),Math.max(0,S.money-2500));if(draw>=500&&fin(-draw,"вознаграждение владельца","expense")){S.personal.cash+=draw;S.personal.income+=draw;toast("Выплата владельцу: "+fm(draw))}if(S.personal.cash>=450){S.personal.cash-=450;S.personal.expenses+=450}}
+ if(S.day%5===0){S.hist.push({d:S.day,b:S.money});if(S.hist.length>90)S.hist.shift()}
+ if(S.day>=S.eventNext){const eligible=eventEligible();if(eligible.length){const weighted=eligible.map(i=>({i,w:1+(S.staff.length/10)+(S.proj.length*.7)+(S.br/100)+(EV[i][0].includes("инцидент")?1:0)}));let pickV=Math.random()*weighted.reduce((a,x)=>a+x.w,0),chosen=weighted[0].i;for(const v of weighted){pickV-=v.w;if(pickV<=0){chosen=v.i;break}}S.eventNext=S.day+8+Math.floor(Math.random()*5);showEvent(chosen)}else S.eventNext=S.day+3}
+ if(S.money< -4500&&(S.day-(S.lastRestructurePrompt||0))>=7){S.lastRestructurePrompt=S.day;mdl(`<h3>Кризис ликвидности</h3><p>Баланс ${fm(S.money)}. Проекты и выплаты продолжаются, но нужен план восстановления.</p><p class="m">Можно взять кредит, выполнить ограниченный фриланс-заказ, продать ненужную платформу или сократить расходы.</p><button class="op" onclick="closeM();loan()" ${S.debt?"disabled":""}>Кредит $6,000</button><button class="op" onclick="closeM();gig()">Антикризисный аудит</button><button class="op" onclick="closeM();view='off';render()">Продать актив / сократить расходы</button><button class="op" onclick="closeM()">Продолжить</button>`)}
+ claimGoals();S.max=Math.max(S.max||0,S.money);save();render()}
+function ev(i,j){if(S.ch!==2||S.eventCurrent!==i||!EV[i]?.[2]?.[j])return;const f=EV[i][2][j][1];if(f.m<0&&S.money<-f.m)return toast("Недостаточно средств для этого решения");if(f.m)fin(f.m,"решение по событию",f.m<0?"expense":"other");if(f.r)rpu("br",f.r);if(f.s){rpu("sat",f.s);Object.values(S.clientData||{}).forEach(c=>c.trust=cl((c.trust||60)+f.s,0,100))}if(f.fa)S.staff.forEach(e=>e.fa=cl(e.fa+f.fa,0,100));if(f.cool)S.staff.forEach(e=>e.jo=cl(e.jo+f.cool,0,100));if(f.sick){const x=S.staff.filter(e=>!e.pr&&!e.busy);if(x.length){const w=pick(x);w.busy=6;toast(w.n+" временно недоступен: 6 дней")}}if(f.tx)S.taxx+=f.tx;if(f.cap)S.cap+=f.cap;
+ if(f.lose){const x=S.staff.filter(e=>!e.pr).sort((a,b)=>a.jo-b.jo)[0];if(x){x.notice=1;x.jo=0}else fin(-2000,"внешний подрядчик","expense")}
+ S.eventCooldowns[i]=S.day+24;S.eventCurrent=null;closeM();toast("Решение принято");claimGoals();save();render()}
+function hire(i){const e=S.cands[i];if(!e)return;if(S.staff.length>=cap())return toast("Нет мест в офисе");if(S.staff.some(x=>x.id===e.id))return toast("Кандидат уже нанят");const fee=Math.round(sal(e)*.5);if(S.money<fee)return toast("Недостаточно средств для найма");if(!fin(-fee,"найм сотрудника","expense"))return;S.staff.push(e);S.cands.splice(i,1,candidate(e.sp));S.hired++;save();pop("−"+fm(fee));claimGoals();render()}
+function refresh(){if(S.money<300)return toast("Недостаточно средств");fin(-300,"подбор кандидатов","expense");S.cands=[gen(),gen(),gen()];save();render()}
+function fire(i){const e=S.staff[i];if(!e||e.pr)return toast("Сотрудник занят на проекте");const severance=Math.round(sal(e)*.2);if(S.money<severance)return toast("Нужны средства на компенсацию при увольнении: "+fm(severance));fin(-severance,"компенсация при увольнении","expense");S.staff.splice(i,1);save();render()}
+function train(i){const e=S.staff[i];if(!e||e.pr||e.busy||e.lv>=5)return toast("Обучение сейчас недоступно");const cost=Math.round(800*e.lv*(S.of.tc?.65:1));if(S.money<cost)return toast("Недостаточно средств");fin(-cost,"обучение персонала","expense");e.busy=S.of.tc?2:4;e.tr=1;save();render()}
+function startCon(i){const c=CT[i];if(!c||S.ch!==2)return;if(S.proj.some(p=>p.c===i))return toast("Этот контракт уже выполняется");if(S.proj.length>=Math.min(3,1+S.of.tier+Math.floor(S.staff.length/6)))return toast("Текущий офис и команда не тянут ещё один проект");if(c.ox&&!S.of[c.ox])return toast("Нужен международный офис");if(S.br<c.mr)return toast("Нужна деловая репутация "+c.mr);if(S.day<(S.cd[i]||0))return toast("Клиент вернётся через "+(S.cd[i]-S.day)+" дн.");
+ const setup=Math.round(c.pay*.12),adv=Math.round(price(i)*.25),reserve=Math.max(400,Math.round(c.pay*.05));if(S.money<setup+reserve)return toast("Нужен резерв "+fm(setup+reserve)+" на запуск и первые расходы");const ps=[];
+ for(const[k,n]of Object.entries(c.need)){const f=S.staff.filter(e=>e.sp===k&&!e.pr&&!e.busy&&e.fa<=85).sort((a,b)=>(a.fa-b.fa)+(b.lv-a.lv)*10).slice(0,n);if(f.length<n)return toast("Не хватает свободных специалистов: "+SP[k][0]);ps.push(...f)}
+ if(!fin(-setup,"мобилизация проекта","expense"))return toast("Не удалось оплатить запуск");fin(adv,"аванс клиента","other");const id=S.contractSeq++;ps.forEach(e=>{e.pr=1;e.projectId=id});S.proj.push({id,c:i,s:0,left:Math.ceil(c.days/3),dl:Math.ceil(c.days*1.65),q:55,st:ps.map(e=>e.id),w:0,adv,setup,tools:0,startedDay:S.day,riskEvents:0,completed:false,late:0});S.cl[c.cl]=1;S.clientData[c.cl]=S.clientData[c.cl]||{trust:60,projects:0,successful:0,segment:c.k,lastQuality:0};save();toast("Проект №"+id+" запущен. Аванс не считается прибылью до сдачи.");render()}
+function decide(pi,oi){const p=S.proj[pi];if(!p||p.completed||!p.w||!DEC[p.s]?.o[oi])return;const c=CT[p.c],o=DEC[p.s].o[oi],cost=Math.round(c.pay*o[3]);if(S.money<cost)return toast("Недостаточно средств на этот вариант: "+fm(cost));if(cost&&!fin(-cost,"инструменты и работы проекта","expense"))return;
+ p.q+=o[1];p.tools+=cost;p.dl-=o[2];if(o[4]){const chance=c.risk*(S.of.ti?.5:1)*.55;if(Math.random()*100<chance){p.q-=10;p.riskEvents++;rpu("sat",-3);rpu("br",-2);toast("Произошёл сбой у клиента: качество и доверие снижены")}}
+ if(p.s===2){done(pi);return}p.s++;p.left=Math.max(2,Math.ceil(c.days/3));p.w=0;save();render()}
+function done(pi){const p=S.proj[pi];if(!p||p.completed||S.completedContracts[p.id])return;const c=CT[p.c],st=p.st.map(id=>S.staff.find(e=>e.id===id)).filter(Boolean);if(st.length===0)return toast("В проекте не осталось сотрудников — назначь замену");p.completed=true;S.completedContracts[p.id]=1;
+ const avgLv=st.reduce((a,e)=>a+e.lv,0)/st.length,avgFa=st.reduce((a,e)=>a+e.fa,0)/st.length,fit=st.filter(e=>(ROLECAT[c.cat]||[]).includes(e.sp)).length/st.length;
+ const Q=p.q+3*avgLv+2*catLv(c.cat)+6*S.of.edr+3*S.of.srv+2*xt(p)+fit*4-avgFa/24-p.riskEvents*4,late=p.dl<0||p.late;const multiplier=cl(.82+(Q-c.qe)*.008,.62,1.15)*(late?.82:1);const gross=Math.max(0,Math.round(price(p.c)*multiplier)),tax=Math.round(gross*(.15+S.taxx)),finalPayment=gross-p.adv;
+ S.proj.splice(pi,1);st.forEach(e=>{e.pr=0;e.projectId=null;e.exp++;e.fa=cl(e.fa-(late?5:14),0,100);e.jo=cl(e.jo+(Q>=c.qe?4:-5)+(late?-5:0),0,100);e.expPoints=(e.expPoints||0)+1;if(e.expPoints>=4*e.lv&&e.lv<5){e.expPoints=0;e.lv++;e.jo=cl(e.jo+8,0,100);toast(e.n+" повысил квалификацию до ур."+e.lv)}});
+ fin(finalPayment,"окончательный платёж по контракту","other");S.rev=(S.rev||0)+gross;fin(-tax,"налоги проекта","expense");if(S.debt){const service=Math.min(S.debt,Math.max(0,Math.round((gross-tax)*.25)));if(service&&fin(-service,"погашение кредита","capital"))S.debt-=service}
+ S.rc[p.c]=(S.rc[p.c]||0)+1;S.cd[p.c]=S.day+Math.round(c.days*.55)+6;S.con++;
+ const clt=S.clientData[c.cl]||{trust:60,projects:0,successful:0,segment:c.k};clt.projects++;clt.successful++;clt.lastQuality=Math.round(Q);clt.trust=cl(clt.trust+(Q>=c.qe+8?5:Q>=c.qe?3:Q>=c.qe-8?0:-6)+(late?-5:0),0,100);S.clientData[c.cl]=clt;
+ const trusts=Object.values(S.clientData).map(x=>x.trust);if(trusts.length){const avgTrust=trusts.reduce((a,b)=>a+b,0)/trusts.length;S.sat=cl(Math.round(S.sat*.35+avgTrust*.65),0,100)}
+ const br=(Q>=c.qe+10?5:Q>=c.qe?3:Q>=c.qe-8?0:-5)+(late?-3:0);rpu("br",br);rpu("pr",Q>=c.qe+8?1:Q<c.qe-8?-1:0);addXP(60+30*c.d);
+ S.contractHistory=S.contractHistory||[];S.contractHistory.unshift({id:p.id,client:c.cl,name:c.n,day:S.day,gross,tax,quality:Math.round(Q),late,team:st.map(e=>e.n)});S.contractHistory=S.contractHistory.slice(0,40);
+ claimGoals();save();pop("+"+fm(finalPayment-tax));mdl(`<h3>Контракт завершён</h3><p>${c.n} — ${c.cl}</p><div class="note"><p><b>Качество:</b> ${Math.round(Q)} (ожидание клиента: ${c.qe})${late?" · просрочка":""}</p><p><b>Общая стоимость:</b> ${fm(gross)} · аванс ранее получен ${fm(p.adv)} · финальный платёж ${fm(finalPayment)}</p><p><b>Налог:</b> ${fm(tax)} · <b>доверие клиента:</b> ${Math.round(clt.trust)}/100</p><p><b>Деловая репутация:</b> ${br>0?"+":""}${br} · <b>средняя удовлетворённость:</b> ${S.sat}</p><p><b>Примерная маржа проекта:</b> ${fm(gross-tax-p.setup-p.tools)}</p></div><button class="pr" onclick="closeM();render()">Продолжить</button>`);render()}
+function reinforce(pi){const p=S.proj[pi];if(!p||p.completed||!p.w)return toast("Усилить команду можно на контрольной точке проекта");const f=S.staff.filter(e=>!e.pr&&!e.busy&&e.fa<=60&&!p.st.includes(e.id)).sort((a,b)=>b.lv-a.lv)[0];if(!f)return toast("Нет свободных сотрудников с низкой усталостью");f.pr=1;f.projectId=p.id;p.st.push(f.id);p.q+=2;save();render()}
+function bonus(i){const e=S.staff[i];if(!e||e.pr)return toast("Сотрудник занят на проекте");const c=Math.round(sal(e)*.3);if(S.money<c)return toast("Недостаточно средств");fin(-c,"премия сотруднику","expense");e.jo=cl(e.jo+22,0,100);e.fa=cl(e.fa-15,0,100);e.notice=0;save();render()}
+function gig(){if(S.ch!==2||S.money>=3500||S.day<(S.gcd||0))return toast("Антикризисный аудит сейчас недоступен");const month=Math.floor(S.day/30);if(S.gigMonth!==month){S.gigMonth=month;S.gigCount=0}if(S.gigCount>=2)return toast("Лимит антикризисных заказов на этот месяц исчерпан");const worker=S.staff.filter(e=>!e.pr&&!e.busy&&e.fa<80).sort((a,b)=>b.lv-a.lv)[0];const payout=worker?Math.round(650+worker.lv*120+S.pr*2):Math.round(600+S.pr*2);if(worker){worker.busy=2;worker.fa=cl(worker.fa+8,0,100)}fin(payout,"антикризисный аудит","other");S.gigCount++;S.gcd=S.day+8;toast("Получен разовый заказ: "+fm(payout));save();render()}
+function loan(){if(S.ch!==2||S.debt>0)return toast("Сначала погаси действующий кредит");fin(6000,"банковский кредит","capital");S.debt=7200;toast("Получено $6,000 · к возврату $7,200");save();render()}
+function repay(){const d=Math.min(S.debt,Math.max(0,S.money));if(d<=0)return toast("Нет средств для погашения");if(fin(-d,"погашение кредита","capital")){S.debt-=d;save();render()}}
+function injectCapital(){const amount=Math.min(2000,Math.max(0,S.personal.cash||0));if(amount<250)return toast("Личных средств пока недостаточно");S.personal.cash-=amount;fin(amount,"вклад владельца в капитал","capital");save();render()}
+function sellAsset(k){const u=UP.find(x=>x[0]===k);if(!u||!S.of[k])return;const resale=Math.round(u[2]*.45);S.of[k]=0;fin(resale,"продажа платформы","other");toast("Актив продан за "+fm(resale)+"; функциональность и бонус отключены");save();render()}
+function buyOf(){const n=OF[S.of.tier+1];if(!n)return;if(S.money<n[1])return toast("Недостаточно средств");if(S.of.tier===0&&(S.br<15||S.con<2))return toast("Нужны деловая репутация 15 и два контракта");if(S.of.tier===1&&(S.br<35||S.staff.length<5))return toast("Нужны репутация 35 и команда из пяти человек");fin(-n[1],"расширение офиса","capex");S.of.tier++;save();render()}
+function buyUp(k){const u=UP.find(x=>x[0]===k);if(!u||S.of[k])return toast("Улучшение уже установлено");if(S.money<u[2])return toast("Недостаточно средств");if(k==="intl"&&(S.br<55||S.con<8))return toast("Для международного офиса нужны репутация 55 и 8 контрактов");if(k==="ast"&&!S.of.alm)return toast("Сначала открой филиал в Алматы");if(["siem","ti","edr"].includes(k)&&S.con<1)return toast("Сначала заверши первый контракт");fin(-u[2],"покупка "+u[1],"capex");S.of[k]=1;save();render()}
+function buySk(id){if(!SK.some(k=>k[0]===id))return;if(pts()<1||(S.sk[id]||0)>=3)return;S.sk[id]=(S.sk[id]||0)+1;S.spent++;save();render()}
+function financialBox(){return`<div class="box"><h2>Финансы и антикризисные меры</h2><p class="m">Кредит: ${fm(S.debt)} к возврату. Кредит $6,000 → долг $7,200. Антикризисный аудит: не более 2 раз за игровой месяц, доступен при балансе ниже $3,500.</p><p>Личные средства владельца: <b>${fm(S.personal.cash||0)}</b></p><div class="row" style="justify-content:flex-start"><button ${S.debt?"disabled":""} onclick="loan()">Взять кредит</button><button ${S.debt&&S.money>0?"":"disabled"} onclick="repay()">Погасить</button><button ${S.money<3500&&S.day>=S.gcd?"":"disabled"} onclick="gig()">Антикризисный аудит</button><button ${(S.personal.cash||0)>=250?"":"disabled"} onclick="injectCapital()">Внести личные средства</button></div><div class="m" style="margin-top:10px;font-family:var(--mono)">${S.led.slice(0,8).map(l=>`д.${l[0]} ${l[1]}: ${l[2]>0?"+":""}${fm(l[2])}`).join("<br>")}</div></div>`}
+function vWork(){const c=S.cur;let h='<div class="grid2"><div><div class="box"><h2>Очередь алертов</h2>';
+ INC.forEach((x,i)=>{const req=MISSION_REQ[i]||[],locked=missionLocked(i),done=!!S.done[i];h+=`<div class="card ${c&&c.i===i?"sel":""}"><div class="row"><h3>${x.t}</h3><span class="bd d${x.d}">${DN[x.d]}</span></div><p>${done?"Завершено · тренировочный повтор без награды":locked?`Закрыто · нужен уровень ${NEED[x.d]} / репутация ${NP[x.d]}${req.length?" / предыдущее дело":""}`:`Награда при первом решении ≈ ${fm(RW[x.d])} · XP ${XPR[x.d]}`}</p><button ${locked||!!S.cur&&S.cur.i!==i?"disabled":""} onclick="openInc(${i})">${done?"Повторить как тренажёр":c&&c.i===i?"Открыто":"Взять в работу"}</button></div>`});
+ h+='</div></div><div class="box">'+(c?incV():"<h2>Рабочее место SOC</h2><p class='m'>Сначала собери доказательства из журналов, отметь подозрительные события, установи первопричину и выбери безопасное защитное действие. Первое успешное расследование оплачивается; повторное — учебное.</p>")+'</div></div>';
+ if(S.ch===1&&S.money>=10000&&lvl()>=8)h+=`<div class="box"><h2>Карьерный переход готов</h2><p class="m">Уровень Team Lead подтверждён. Можно вложить $10,000 и основать QALQAN CYBER.</p><button class="pr" onclick="toCh2()">Основать QALQAN CYBER</button></div>`;return h}
+function vDash(){const busy=S.proj.length,net=(S.rev||0)-(S.exp||0),clients=Object.keys(S.clientData||{}).length;return`<div class="g3"><div class="box"><h2>Финансы компании</h2><p>Баланс: <b class="g">${fm(S.money)}</b><br>Операционные расходы/день: ${fm(dExp())}<br>Выручка по контрактам: ${fm(S.rev)}<br>Расходы: ${fm(S.exp)}<br>Опер. результат: <b>${fm(net)}</b><br>Долг: ${fm(S.debt)}<br>Просроченные расходы: ${fm(S.payrollArrears||0)}<br>Капвложения: ${fm(S.company.capex||0)}</p></div><div class="box"><h2>QALQAN CYBER</h2><p>Деловая репутация: ${Math.round(S.br)}<br>Удовлетворённость клиентов: ${Math.round(S.sat)}<br>Профессиональная репутация владельца: ${Math.round(S.pr)}<br>Клиенты: ${clients} · контрактов: ${S.con}<br>Сотрудники: ${S.staff.length}/${cap()}<br>Активные проекты: ${busy}<br>День: ${S.day} · Выплата владельцу: до ${fm(salaryNow())}/мес</p></div><div class="box"><h2>Личные финансы</h2><p>Личный капитал: <b>${fm(S.personal.cash||0)}</b><br>Личный доход: ${fm(S.personal.income||0)}<br>Личные расходы: ${fm(S.personal.expenses||0)}<br>Статус: ${title()}</p></div></div><div class="box"><h2>График баланса (90 дней)</h2>${chart()}</div>`+gbox()+(busy?`<div class="box"><h2>Активные проекты</h2>${projs()}</div>`:"")+`<div class="box"><h2>Постоянные клиенты</h2>${Object.entries(S.clientData||{}).map(([name,x])=>`<div class="row m"><span>${name} · ${x.segment||"клиент"} · проектов ${x.projects||0}</span><span>доверие ${Math.round(x.trust||0)}/100</span></div>`).join("")||"<p class='m'>Пока нет завершённых проектов.</p>"}</div>`}
+function projs(){return S.proj.map((p,i)=>{const c=CT[p.c];let h=`<div class="card"><div class="row"><h3>№${p.id} · ${c.n}</h3><span class="m">${c.cl}</span></div><p>${DEC[p.s].q} · осталось до дедлайна ${p.dl} дн.${p.dl<0?" · просрочка":""}<br>Команда: ${p.st.map(id=>S.staff.find(e=>e.id===id)?.n||"Сотрудник недоступен").join(", ")}<br>Аванс: ${fm(p.adv)} · мобилизация: ${fm(p.setup)} · риск-события: ${p.riskEvents||0}</p><div class="pb"><i style="width:${p.w?100:cl(100-p.left/(Math.ceil(c.days/3))*100,0,100)}%"></i></div>`;
+ if(p.w)h+=DEC[p.s].o.map((o,j)=>`<button class="op" onclick="decide(${i},${j})">${o[0]}${o[3]?" (−"+fm(c.pay*o[3])+")":""}${o[4]?" · риск":""}</button>`).join("");else h+=`<p class="m">Этап выполняется автоматически: скорость зависит от специализации, уровня и усталости команды.</p>`;
+ h+=`<button ${p.w?"":"disabled"} onclick="reinforce(${i})">+ Усилить команду (${xt(p)})</button></div>`;return h}).join("")}
+function vCtr(){let h=S.proj.length?`<div class="box"><h2>Активные проекты</h2>${projs()}</div>`:"";return h+'<div class="g3">'+CT.map((c,i)=>{const cd=Math.max(0,(S.cd[i]||0)-S.day),act=S.proj.some(p=>p.c===i),why=act?"В работе":(c.ox&&!S.of[c.ox])?"Нужен международный офис":S.br<c.mr?"Нужна деловая репутация "+c.mr:cd?"Клиент вернётся через "+cd+" дн.":"",p=price(i),setup=Math.round(c.pay*.12),advance=Math.round(p*.25),trust=S.clientData?.[c.cl]?.trust??60;
+ return`<div class="card"><div class="row"><h3>${c.n}</h3><span class="bd d${c.d}">${DN[c.d]}</span></div><p>${c.cl} · ${c.k}<br>Оценка контракта: <b class="g">${fm(p)}</b> · срок ${c.days} дн.<br>Мобилизация: ${fm(setup)} · аванс: ${fm(advance)} · налог: 15%+<br>Риск проекта: ${c.risk}% · ожидаемое качество: ${c.qe}<br>Доверие клиента: ${trust}/100<br>Требуемая команда: ${roleRequirements(i)}</p><button class="pr" ${why||S.money<setup+Math.max(400,Math.round(c.pay*.05))?"disabled":""} onclick="startCon(${i})">${why||"Принять контракт"}</button></div>`}).join("")+"</div>"}
+function vOff(){const n=OF[S.of.tier+1];return fbox()+`<div class="box"><h2>Офис: ${OF[S.of.tier][0]}</h2><p class="m">Мест: ${cap()} · содержание ${fm(OF[S.of.tier][3])}/день</p>${n?`<button class="pr" ${S.money<n[1]||S.of.tier===0&&(S.br<15||S.con<2)||S.of.tier===1&&(S.br<35||S.staff.length<5)?"disabled":""} onclick="buyOf()">Улучшить: ${n[0]} (${fm(n[1])}, мест ${n[2]}, ${fm(n[3])}/день)</button>`:"<p class='g'>Максимальный уровень офиса</p>"}</div><div class="g3">`+UP.map(u=>`<div class="card"><h3>${u[1]}</h3><p>${u[4]}<br>Цена: ${fm(u[2])} · обслуживание: ${fm(u[3])}/день</p><button class="pr" ${!S.of[u[0]]&&S.money>=u[2]&&!(u[0]==="intl"&&(S.br<55||S.con<8))&&!(u[0]==="ast"&&!S.of.alm)?"":"disabled"} onclick="buyUp('${u[0]}')">${S.of[u[0]]?"Установлено": "Купить "+fm(u[2])}</button>${S.of[u[0]]?`<button onclick="sellAsset('${u[0]}')">Продать за ${fm(u[2]*.45)}</button>`:""}</div>`).join("")+"</div>"}
+function hud(){const g=S.ch===1;$("hud").innerHTML=`<h1>${SHIELD}QALQAN<span class="beta">BETA</span><span class="ver">VERSION 3.0</span><span class="ch">${g?"CAREER MODE":"COMPANY MODE"}</span></h1><div class="st"><b>${title()}</b><span>ур.${lvl()} · XP ${S.xp}</span></div><div class="st"><b>${fm(S.money)}</b><span>${g?"личный баланс":"баланс компании"}</span></div><div class="st"><b>${Math.round(S.pr)}</b><span>проф. репутация</span></div>${g?"":`<div class="st"><b>${Math.round(S.br)}</b><span>деловая</span></div><div class="st"><b>${Math.round(S.sat)}</b><span>клиенты</span></div>`}${g?`<div class="bar" style="flex-basis:100%"><i style="width:${Math.min(100,S.money/100)}%"></i></div>`:`<div class="st"><b>День ${S.day}</b><span>расходы ${fm(dExp())}/день</span></div><div class="row" style="gap:4px">${[1,2,4].map(n=>`<button class="${S.speed===n?"on":""}" onclick="setSpeed(${n})">×${n}</button>`).join("")}</div>`}<button onclick="chat()">CHAT</button><button onclick="menu()">SETTINGS</button>`}
+function render(){hud();nav();if(view!==lastV){lastV=view;const mn=$("main");mn.classList.remove("pt");void mn.offsetWidth;mn.classList.add("pt")}const views={work:vWork,skills:vSk,ach:vAch,con:vCon,dash:vDash,team:vTeam,ctr:vCtr,off:vOff};$("main").innerHTML=(views[view]||vWork)();chk();syncCompany();save()}
+function impJ(){try{const o=JSON.parse($("imp").value);if(!o||typeof o.money!=="number"||![1,2].includes(o.ch))throw 0;normalizeState(o);save();closeM();view=S.ch===2?"dash":"work";if(S.ch===2)loop();else clearInterval(T);render();toast("Сохранение загружено и проверено")}catch(e){toast("Неверный или повреждённый файл сохранения")}}
+function newGame(f){if(!f&&!confirm("Начать заново? Весь прогресс будет потерян."))return;clearInterval(T);S=fresh();syncCompany();save();closeM();view="work";lastV=null;intro();render()}
+function intro(){if(S.story)return;mdl(`<h3>Смена начинается</h3><div class="who"><div>${av(CH.R.h)}</div><p><b>Арман:</b> Добро пожаловать в SOC, стажёр. Клиенты платят за спокойный сон, так что работай чисто.</p></div><div class="who"><div>${av(CH.A.h)}</div><p><b>Айдар:</b> Начинай с улик, устанавливай причину и выбирай защитное действие. Твоя цель — вырасти до Team Lead, а затем построить QALQAN CYBER.</p></div><button class="pr" onclick="S.story=1;closeM();save();chat()">Начать</button>`)}
+
+
+// ============================================================
+// SMART DEVICE DETECTION + ADAPTIVE PRESENTATION
+// This layer changes presentation only. S (the game state),
+// contracts, missions, timers, saves and economics stay shared.
+// ============================================================
+const DISPLAY_SETTINGS=(()=>{
+ try{return Object.assign({mode:"auto"},JSON.parse(localStorage.getItem("qalqan_display_settings")||"{}"))}
+ catch(e){return{mode:"auto"}}
+})();
+const DISPLAY={mode:"laptop",autoMode:"laptop",orientation:"landscape",input:"mouse",socPanel:"queue",ready:false,lastWidth:0,lastHeight:0,observer:null,raf:0};
+const DISPLAY_MODES=["auto","mobile","tablet","laptop","desktop"];
+const DISPLAY_NAMES={auto:"AUTO DETECT",mobile:"MOBILE",tablet:"TABLET",laptop:"LAPTOP",desktop:"DESKTOP"};
+function media(q){try{return!!(window.matchMedia&&window.matchMedia(q).matches)}catch(e){return false}}
+function displaySnapshot(){
+ const w=Math.max(1,Math.round(window.innerWidth||document.documentElement.clientWidth||screen.width||1));
+ const h=Math.max(1,Math.round(window.innerHeight||document.documentElement.clientHeight||screen.height||1));
+ const sw=Math.max(1,Math.round(screen.availWidth||screen.width||w));
+ const sh=Math.max(1,Math.round(screen.availHeight||screen.height||h));
+ const coarse=media("(pointer:coarse)"),fine=media("(pointer:fine)"),hover=media("(hover:hover)");
+ const touchPoints=Number(navigator.maxTouchPoints||0);
+ const anyCoarse=media("(any-pointer:coarse)");
+ const touch=touchPoints>0||coarse||anyCoarse;
+ const ua=String(navigator.userAgent||"");
+ const uaMobile=!!(navigator.userAgentData?.mobile)||/Android.*Mobile|iPhone|iPod|Windows Phone|Mobi/i.test(ua);
+ const uaTablet=/iPad|Tablet|PlayBook|Silk/i.test(ua)||(/Macintosh/i.test(ua)&&touchPoints>1);
+ let autoMode;
+ // UA is only a secondary hint. CSS viewport width and orientation lead.
+ if(w<=640||(h<=520&&w<=950&&(uaMobile||coarse&&touch))) autoMode="mobile";
+ else if(w<=1100||(coarse&&touch&&w<=1280)||uaTablet&&w<=1280) autoMode="tablet";
+ else if(w<=1600) autoMode="laptop";
+ else autoMode="desktop";
+ const orientation=w>=h?"landscape":"portrait";
+ const input=coarse&&fine?"TOUCH + MOUSE":coarse||touch&&!hover?"TOUCH":fine||hover?"MOUSE":"POINTER";
+ const vv=window.visualViewport;
+ return{width:w,height:h,availableWidth:sw,availableHeight:sh,dpr:Number(window.devicePixelRatio||1),orientation,touch,touchPoints,coarse,fine,hover,anyCoarse,input,uaMobile,uaTablet,autoMode,visualWidth:vv?Math.round(vv.width):w,visualHeight:vv?Math.round(vv.height):h,scale:vv?Number(vv.scale||1):1};
+}
+function saveDisplaySettings(){try{localStorage.setItem("qalqan_display_settings",JSON.stringify({mode:DISPLAY_SETTINGS.mode}))}catch(e){}}
+function updateDeviceInfo(){
+ const el=$("displayInfo");if(!el)return;
+ const d=displaySnapshot(),effective=DISPLAY.mode.toUpperCase(),source=DISPLAY_SETTINGS.mode==="auto"?"AUTO":"MANUAL";
+ const values={
+  "ds-mode":effective+" · "+source,
+  "ds-viewport":d.width+" × "+d.height+" CSS px",
+  "ds-screen":d.availableWidth+" × "+d.availableHeight+" px",
+  "ds-orientation":d.orientation.toUpperCase(),
+  "ds-input":d.input,
+  "ds-scale":"AUTO · DPR "+d.dpr.toFixed(2),
+  "ds-touch":d.touch?"YES · "+d.touchPoints+" POINT(S)":"NO",
+  "ds-hover":d.hover?"AVAILABLE":"NOT AVAILABLE",
+  "ds-ua":d.uaMobile?"MOBILE HINT":d.uaTablet?"TABLET HINT":"DESKTOP / UNKNOWN"
+ };
+ Object.entries(values).forEach(([id,value])=>{const node=$(id);if(node)node.textContent=value});
+ const select=$("displayMode");if(select&&select.value!==DISPLAY_SETTINGS.mode)select.value=DISPLAY_SETTINGS.mode;
+}
+function applyDisplayMode(shouldRender=true){
+ const d=displaySnapshot(),requested=DISPLAY_MODES.includes(DISPLAY_SETTINGS.mode)?DISPLAY_SETTINGS.mode:"auto";
+ const mode=requested==="auto"?d.autoMode:requested;
+ const oldMode=DISPLAY.mode,oldOrientation=DISPLAY.orientation;
+ DISPLAY.autoMode=d.autoMode;DISPLAY.mode=mode;DISPLAY.orientation=d.orientation;DISPLAY.input=d.input;
+ const root=document.documentElement;
+ root.dataset.uiMode=mode;root.dataset.uiOrientation=d.orientation;root.dataset.uiInput=d.input.toLowerCase().replace(/[^a-z]+/g,"-");
+ root.style.setProperty("--viewport-width",d.width+"px");root.style.setProperty("--viewport-height",d.height+"px");
+ root.classList.remove("ui-mobile","ui-tablet","ui-laptop","ui-desktop");root.classList.add("ui-"+mode);
+ if(mode==="mobile"&&oldMode!=="mobile")DISPLAY.socPanel=S.cur?"detail":"queue";
+ updateDeviceInfo();
+ const changed=oldMode!==mode;
+ if(shouldRender&&DISPLAY.ready&&changed&&typeof render==="function")render();
+ return changed||oldOrientation!==d.orientation;
+}
+function setDisplayMode(mode){
+ if(!DISPLAY_MODES.includes(mode))mode="auto";
+ DISPLAY_SETTINGS.mode=mode;saveDisplaySettings();
+ applyDisplayMode(true);menu();toast(mode==="auto"?"Автоматическое определение включено":"Режим отображения: "+DISPLAY_NAMES[mode]);
+}
+function resetDisplayMode(){setDisplayMode("auto")}
+function setSocPanel(panel){
+ if(panel==="detail"&&!S.cur)return;
+ DISPLAY.socPanel=panel==="detail"?"detail":"queue";render();
+}
+function nav(){
+ const full=S.ch===2?[["dash","Офис"],["team","Команда"],["ctr","Контракты"],["off","Улучшения"],["skills","Навыки"],["ach","Достижения"],["con","Контакты"]]:[["work","Рабочее место"],["skills","Навыки"],["ach","Достижения"],["con","Контакты"]];
+ const short={dash:"Офис",team:"Команда",ctr:"Заказы",off:"Активы",skills:"Навыки",ach:"Цели",con:"Связи",work:"SOC"};
+ if(!full.some(x=>x[0]===view))view=full[0][0];
+ $("nav").innerHTML=full.map(x=>`<button class="${view===x[0]?"on":""}" title="${x[1]}" aria-label="${x[1]}" onclick="view='${x[0]}';render()">${DISPLAY.mode==="mobile"?short[x[0]]:x[1]}</button>`).join("");
+}
+function openInc(i){if(!INC[i])return;DISPLAY.socPanel="detail";S.cur={i,op:{},mk:{},ph:0,tm:0,er:0,bad:{},t:null};render();say(INC[i].by,"Берём "+INC[i].t.split("—")[0]+". Начни с источников данных.");if(DISPLAY.mode==="mobile")$("chat").classList.add("hide");else chat()}
+function vWork(){
+ const c=S.cur;
+ let queue='<div class="box"><h2>Очередь алертов</h2>';
+ INC.forEach((x,i)=>{
+  const req=MISSION_REQ[i]||[],locked=missionLocked(i),done=!!S.done[i];
+  queue+=`<div class="card ${c&&c.i===i?"sel":""}"><div class="row"><h3>${x.t}</h3><span class="bd d${x.d}">${DN[x.d]}</span></div><p>${done?"Завершено · тренировочный повтор без награды":locked?`Закрыто · нужен уровень ${NEED[x.d]} / репутация ${NP[x.d]}${req.length?" / предыдущее дело":""}`:`Награда при первом решении ≈ ${fm(RW[x.d])} · XP ${XPR[x.d]}`}</p><button ${locked||!!S.cur&&S.cur.i!==i?"disabled":""} onclick="openInc(${i})">${done?"Повторить как тренажёр":c&&c.i===i?"Открыто":"Взять в работу"}</button></div>`;
+ });
+ queue+='</div>';
+ const detail=`<div class="box">${c?`<button class="soc-return" onclick="setSocPanel('queue')">← К очереди алертов</button>${incV()}`:`<h2>Рабочее место SOC</h2><p class="m">Выбери алерт в очереди. Собери доказательства, установи первопричину и выбери безопасное защитное действие.</p>`}</div>`;
+ let h='';
+ if(DISPLAY.mode==="mobile"){
+  const isDetail=!!c&&DISPLAY.socPanel==="detail";
+  h=`<div class="soc-mobile-switch"><button class="${isDetail?"":"active"}" onclick="setSocPanel('queue')">ОЧЕРЕДЬ · ${INC.length}</button><button class="${isDetail?"active":""}" ${c?"":"disabled"} onclick="setSocPanel('detail')">РАССЛЕДОВАНИЕ${c?" · АКТИВНО":""}</button></div>${isDetail?detail:queue}`;
+ }else h=`<div class="grid2"><div>${queue}</div>${detail}</div>`;
+ if(S.ch===1&&S.money>=10000&&lvl()>=8)h+=`<div class="box"><h2>Карьерный переход готов</h2><p class="m">Уровень Team Lead подтверждён. Можно вложить $10,000 и основать QALQAN CYBER.</p><button class="pr" onclick="toCh2()">Основать QALQAN CYBER</button></div>`;
+ return h;
+}
+function vTeam(){
+ const actionButtons=(e,i)=>`<div class="staff-actions"><button ${e.pr||e.busy||e.lv>=5?"disabled":""} onclick="train(${i})">Обучить</button><button ${e.pr?"disabled":""} onclick="bonus(${i})">Премия</button><button ${e.pr?"disabled":""} onclick="fire(${i})">Уволить</button></div>`;
+ const staffRows=S.staff.map((e,i)=>`<tr><td><b>${e.n}</b><br><span class="m">${SP[e.sp][0]}</span></td><td>${stars(e)}<br>ур. ${e.lv}</td><td>${fm(sal(e))}/мес</td><td>Опыт ${e.expPoints||e.exp||0}/${4*e.lv}<br>Усталость ${e.fa}% · настроение ${e.jo}%</td><td>${e.pr?"На проекте":e.busy?"Недоступен "+e.busy+" дн.":"Свободен"}</td><td>${actionButtons(e,i)}</td></tr>`).join("");
+ const cards=S.staff.map((e,i)=>ecard(e,`<div class="row"><button ${e.pr||e.busy||e.lv>=5?"disabled":""} onclick="train(${i})">Обучить (${fm(800*e.lv*(S.of.tc?.65:1))})</button><button ${e.pr?"disabled":""} onclick="bonus(${i})">Премия</button><button ${e.pr?"disabled":""} onclick="fire(${i})">Уволить</button></div>`)).join("");
+ const candidates=S.cands.map((e,i)=>ecard(e,`<button class="pr" onclick="hire(${i})">Нанять (${fm(sal(e)/2)})</button>`)).join("");
+ return `<div class="team-layout"><div class="box"><h2>Команда ${S.staff.length}/${cap()}</h2><div class="team-table-wrap"><table class="team-table"><thead><tr><th>Сотрудник</th><th>Уровень</th><th>Зарплата</th><th>Состояние</th><th>Назначение</th><th>Управление</th></tr></thead><tbody>${staffRows||`<tr><td colspan="6" class="m">Пока никого. Найми первого сотрудника.</td></tr>`}</tbody></table></div><div class="team-cards">${cards||"<p class='m'>Пока никого. Найми первого сотрудника.</p>"}</div></div><div class="box"><h2>Резюме кандидатов</h2>${candidates}<button onclick="refresh()">Обновить список (−$300)</button></div></div>`;
+}
+function menu(){
+ const modeOptions=[["auto","AUTO DETECT"],["mobile","MOBILE MODE"],["tablet","TABLET MODE"],["laptop","LAPTOP MODE"],["desktop","DESKTOP MODE"]];
+ mdl(`<h3>Settings / About</h3>
+ <button class="op pr" onclick="save();toast('Сохранено');closeM()">Сохранить сейчас</button>
+ <button class="op" onclick="expJ()">Экспорт сохранения (JSON)</button>
+ <button class="op" onclick="togIntro()">Intro Animation: ${SET.intro?"ON":"OFF"}</button>
+ <section class="device-settings" aria-label="Display settings"><h4>DISPLAY SETTINGS</h4>
+ <label for="displayMode">Режим отображения</label>
+ <select id="displayMode" onchange="setDisplayMode(this.value)">${modeOptions.map(([v,l])=>`<option value="${v}" ${DISPLAY_SETTINGS.mode===v?"selected":""}>${l}</option>`).join("")}</select>
+ <div id="displayInfo" class="device-facts">
+  <div><span>Device Mode</span><b id="ds-mode">—</b></div><div><span>Viewport</span><b id="ds-viewport">—</b></div>
+  <div><span>Available Screen</span><b id="ds-screen">—</b></div><div><span>Orientation</span><b id="ds-orientation">—</b></div>
+  <div><span>Input</span><b id="ds-input">—</b></div><div><span>Display Scale</span><b id="ds-scale">—</b></div>
+  <div><span>Touch Support</span><b id="ds-touch">—</b></div><div><span>Hover</span><b id="ds-hover">—</b></div>
+  <div><span>UA Hint</span><b id="ds-ua">—</b></div>
+ </div>
+ <button class="op" onclick="resetDisplayMode()">RESET TO AUTO</button>
+ <p class="m">Определение основано на CSS viewport, ориентации и возможностях ввода. Тип физического устройства оценивается приблизительно. Масштабирование интерфейса не влияет на игровой прогресс.</p>
+ </section>
+ <div class="m">Импорт: выбери файл или вставь JSON</div><input type="file" accept=".json,application/json" onchange="rdF(this)"><textarea id="imp" aria-label="Save JSON"></textarea>
+ <button class="op" onclick="impJ()">Загрузить из JSON</button><button class="op" onclick="newGame()">Новая игра</button>
+ <div class="note"><p><b>QALQAN</b> — Cybersecurity Simulator</p><p>VERSION 3.0.0</p><p>Клавиши: Alt+1…7 — навигация, Esc — закрыть окно.</p><p>QALQAN © 2026 · MADE BY ABDUALI</p></div>
+ <button class="op" onclick="closeM()">Закрыть</button>`);
+ updateDeviceInfo();
+}
+function initSmartDisplay(){
+ applyDisplayMode(false);DISPLAY.socPanel=S.cur?"detail":"queue";DISPLAY.ready=true;
+ const schedule=()=>{if(DISPLAY.raf)return;DISPLAY.raf=requestAnimationFrame(()=>{DISPLAY.raf=0;applyDisplayMode(true)})};
+ window.addEventListener("resize",schedule,{passive:true});
+ window.addEventListener("orientationchange",()=>setTimeout(schedule,80),{passive:true});
+ if(window.visualViewport)window.visualViewport.addEventListener("resize",schedule,{passive:true});
+ if(screen.orientation&&screen.orientation.addEventListener)screen.orientation.addEventListener("change",schedule);
+ ["(pointer:coarse)","(pointer:fine)","(hover:hover)","(orientation:portrait)"].forEach(q=>{try{const m=matchMedia(q);m.addEventListener?m.addEventListener("change",schedule):m.addListener&&m.addListener(schedule)}catch(e){}});
+ if("ResizeObserver" in window){
+  DISPLAY.observer=new ResizeObserver(()=>schedule());
+  const target=$("wrap")||document.querySelector(".wrap");if(target)DISPLAY.observer.observe(target);
+ }
+ document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){
+   if($("ov").classList.contains("on"))closeM();
+   else if($("tr").classList.contains("on"))$("tr").classList.remove("on");
+   else if(!$("chat").classList.contains("hide"))$("chat").classList.add("hide");
+  }
+  if(e.altKey&&!e.ctrlKey&&!e.metaKey&&/^[1-7]$/.test(e.key)&&!$("cin")?.matches(":focus")&&!$("imp")?.matches(":focus")){
+   const list=S.ch===2?["dash","team","ctr","off","skills","ach","con"]:["work","skills","ach","con"];
+   const idx=Number(e.key)-1;if(list[idx]){e.preventDefault();view=list[idx];render()}
+  }
+ });
+}
+
+
+// ===== СТАРТ =====
+load();initSmartDisplay();render();if(S.ch==2){loop();restoreEventModal()}else intro();
+introRun();
+setInterval(save,15000);
+</script></body></html>
