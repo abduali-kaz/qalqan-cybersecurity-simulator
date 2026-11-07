@@ -73,7 +73,7 @@ footer{text-align:center;color:var(--d);font-size:10px;letter-spacing:.2em;paddi
 .ldw{width:min(340px,72vw)}.ld{height:1px;background:var(--bd)}.ld i{display:block;height:100%;width:0;background:#fff}
 .meta{display:flex;justify-content:space-between;font:10px var(--mono);letter-spacing:.2em;color:var(--d);margin-top:8px}
 #intro .ver2{font:10px var(--mono);letter-spacing:.25em;color:var(--m)}
-#istart{opacity:0;pointer-events:none;transition:opacity .7s,background .18s,color .18s;letter-spacing:.2em;text-align:center}#istart.show{opacity:1;pointer-events:auto}
+#intro .intro-actions{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px}#istart,#itrailer{opacity:0;pointer-events:none;transition:opacity .7s,background .18s,color .18s;letter-spacing:.2em;text-align:center;min-width:170px}#istart.show,#itrailer.show{opacity:1;pointer-events:auto}#itrailer{background:#080808;color:#fff;border-color:#666}#itrailer:hover{background:#fff;color:#000}@media(max-width:480px){#intro .intro-actions{width:100%;max-width:330px;display:grid;grid-template-columns:1fr}#istart,#itrailer{width:100%}}
 .skip{position:absolute;top:16px;right:16px;font-size:10px;letter-spacing:.18em;border-color:var(--bd);color:var(--m)}
 .sig{position:absolute;bottom:20px;font-size:10px;letter-spacing:.25em;color:var(--d);line-height:1.8}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
@@ -265,14 +265,14 @@ html[data-ui-mode="tablet"] .team-layout,html[data-ui-mode="mobile"] .team-layou
 }
 
 </style></head><body>
-<div class="wrap"><header id="hud"></header><div class="shell"><nav id="nav"></nav><main id="main"></main></div><footer>QALQAN © 2026 &nbsp;·&nbsp; MADE BY ABDUALI &nbsp;·&nbsp; VERSION 3.0.0</footer></div>
+<div class="wrap"><header id="hud"></header><div class="shell"><nav id="nav"></nav><main id="main"></main></div><footer>QALQAN © 2026 &nbsp;·&nbsp; MADE BY ABDUALI &nbsp;·&nbsp; VERSION 3.0.0 &nbsp;·&nbsp; <a href="promo.html" style="color:#fff;text-decoration:underline;text-underline-offset:3px">WATCH TRAILER</a></footer></div>
 <div id="toasts"></div><div class="ov" id="ov"><div class="modal" id="modal"></div></div><div class="ov tr" id="tr"></div>
 <div id="chat" class="hide"><div class="row" style="padding:8px 10px;border-bottom:1px solid var(--bd)"><div class="who" id="chh"></div><button onclick="$('chat').classList.add('hide')">✕</button></div>
 <div id="cl"></div><div style="padding:8px"><div class="row" style="margin-bottom:6px"><button onclick="ask('Подсказка')">Подсказка</button><button onclick="ask('Объясни ошибку')">Объясни ошибку</button></div><input id="cin" placeholder="Спроси Айдара: фишинг, SIEM, порты…" onkeydown="if(event.key=='Enter'){ask($('cin').value);$('cin').value=''}"></div></div>
 <div id="intro" role="dialog" aria-label="QALQAN"><div class="scan"></div><button class="skip" onclick="introEnd()">SKIP INTRO</button>
 <div class="lg">QALQAN</div><div class="sub"><span id="itx"></span><span class="cur"></span></div><span class="beta">BETA</span>
 <div class="ldw"><div class="ld"><i id="ibar"></i></div><div class="meta"><span id="ist"></span><span id="ipc">0%</span></div></div>
-<div class="ver2">VERSION 2.0.0 — BETA</div><button id="istart" class="pr" onclick="introEnd()">[ START SYSTEM ]</button>
+<div class="ver2">VERSION 2.0.0 — BETA</div><div class="intro-actions"><button id="istart" class="pr" onclick="introEnd()">[ PLAY GAME ]</button><button id="itrailer" onclick="location.href='promo.html'">[ WATCH TRAILER ]</button></div>
 <div class="sig">QALQAN © 2026<br>MADE BY ABDUALI</div></div>
 <script>
 const $=i=>document.getElementById(i),pick=a=>a[Math.random()*a.length|0],cl=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -465,10 +465,10 @@ const SET=(()=>{try{return Object.assign({intro:1},JSON.parse(localStorage.getIt
 function togIntro(){SET.intro=SET.intro?0:1;try{localStorage.setItem("qalqan_set",JSON.stringify(SET))}catch(e){}menu()}
 function typeTo(id,t,ms){const el=$(id);let i=0;const h=setInterval(()=>{el.textContent=t.slice(0,++i);if(i>=t.length)clearInterval(h)},ms)}
 function introEnd(){const o=$("intro");if(!o.classList.contains("on"))return;o.classList.add("out");setTimeout(()=>o.classList.remove("on","out"),700);try{localStorage.setItem("qalqan_seen","1")}catch(e){}}
-function introRun(){if(!SET.intro)return;const o=$("intro");o.classList.add("on");const rm=matchMedia("(prefers-reduced-motion: reduce)").matches;let seen=0;try{seen=localStorage.getItem("qalqan_seen")}catch(e){}
+function introRun(){if(new URLSearchParams(location.search).has("play"))return;if(!SET.intro)return;const o=$("intro");o.classList.add("on");const rm=matchMedia("(prefers-reduced-motion: reduce)").matches;let seen=0;try{seen=localStorage.getItem("qalqan_seen")}catch(e){}
  const D=rm?400:seen?2200:3800,A="CYBERSECURITY SIMULATOR",B="SYSTEM INITIALIZED";
  if(rm){$("itx").textContent=A;$("ist").textContent=B}else{typeTo("itx",A,seen?30:50);typeTo("ist",B,45)}
- const t0=performance.now();(function f(t){const p=Math.min(1,Math.max(0,(t-t0)/D));$("ibar").style.width=p*100+"%";$("ipc").textContent=Math.round(p*100)+"%";if(p<1)requestAnimationFrame(f);else $("istart").classList.add("show")})(t0)}
+ const t0=performance.now();(function f(t){const p=Math.min(1,Math.max(0,(t-t0)/D));$("ibar").style.width=p*100+"%";$("ipc").textContent=Math.round(p*100)+"%";if(p<1)requestAnimationFrame(f);else{$("istart").classList.add("show");$("itrailer").classList.add("show")}})(t0)}
 function expJ(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:"application/json"}));a.download="qalqan-save.json";a.click()}
 function rdF(i){const f=i.files[0];if(f){const r=new FileReader();r.onload=()=>$("imp").value=r.result;r.readAsText(f)}}
 function impJ(){try{const o=JSON.parse($("imp").value);if(!o||!o.ch||typeof o.money!="number")throw 0;S=Object.assign(fresh(),o);save();closeM();if(S.ch==2)loop();render();toast("Сохранение загружено")}catch(e){toast("Неверный файл сохранения")}}
