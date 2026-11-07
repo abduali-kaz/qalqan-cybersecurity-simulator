@@ -7,7 +7,7 @@
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
 button,a{font:inherit}button{background:#050505;border:1px solid #777;color:#fff;padding:9px 13px;border-radius:2px;cursor:pointer;font:600 9px var(--mono);letter-spacing:.15em}button:hover{background:#fff;color:#000}button:focus-visible,a:focus-visible{outline:2px solid #fff;outline-offset:4px}a{color:inherit;text-decoration:none}
 #canvas{position:absolute;left:50%;top:50%;width:min(100vw,177.78vh);height:min(100dvh,56.25vw);transform:translate(-50%,-50%);aspect-ratio:16/9;background:#000;overflow:hidden;border:1px solid #151515}
-#canvas:before{content:"";position:absolute;inset:0;z-index:29;pointer-events:none;background:linear-gradient(90deg,#fff08 1px,transparent 1px),linear-gradient(#fff08 1px,transparent 1px);background-size:64px 64px;opacity:.12}
+#canvas:before{content:"";position:absolute;inset:0;z-index:29;pointer-events:none;background:linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px);background-size:64px 64px;opacity:.12}
 #canvas:after{content:"";position:absolute;inset:0;z-index:30;pointer-events:none;box-shadow:inset 0 0 100px #000c}
 .scene{position:absolute;inset:0;display:flex;align-items:center;padding:7% 8%;opacity:0;visibility:hidden;transform:scale(1.025);transition:opacity .8s var(--ease),transform 1s var(--ease),visibility .8s}
 .scene.active{opacity:1;visibility:visible;transform:none}.scene:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,#fff0d,transparent 65%);pointer-events:none}
@@ -42,7 +42,7 @@ h1,h2,h3,p{margin-top:0}.brand{font-size:clamp(44px,9vw,116px);font-weight:850;l
  .counter{left:10px;bottom:calc(9px + env(safe-area-inset-bottom));font-size:6px}.scene-name{right:10px;bottom:calc(9px + env(safe-area-inset-bottom));font-size:6px}
 }
 @media(max-width:390px) and (orientation:portrait){.grid{grid-template-columns:1fr}.grid .panel:last-child{grid-column:auto}.business{grid-template-columns:1fr}.business .bizcard:nth-child(2){display:none}.scene{padding-left:5%;padding-right:5%}}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.scan{display:none}.scene{transform:none!important}}
+@media (min-aspect-ratio:17/20) and (max-aspect-ratio:23/20) and (min-width:500px){#canvas{width:min(100vw,100dvh);height:min(100dvh,100vw);aspect-ratio:1/1}.scene{padding:6% 7%}.brand{font-size:clamp(38px,7vw,84px)}.grid{grid-template-columns:1fr 1fr}.grid .panel:last-child{grid-column:1/-1}.incident{gap:8px}.business{gap:8px}.career{margin-top:24px}.pillar{min-height:94px}}\n@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.scan{display:none}.scene{transform:none!important}}
 </style></head>
 <body><div id="canvas" aria-label="QALQAN cinematic promotional trailer">
 <div class="scan"></div><div class="toolbar"><span class="tb-brand">QALQAN // OFFICIAL TRAILER</span><div class="tb-actions"><button id="sound">SOUND OFF</button><button id="skip">SKIP</button></div></div>
